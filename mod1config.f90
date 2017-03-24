@@ -38,6 +38,65 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell)
 end subroutine initSystem
 
 
+! calculate cell centroid (aka COM)
+subroutine getCOM( rCell, com)
+    implicit none
+    integer,  intent(in)  :: rCell(:,:)
+    real(b8), intent(out) :: com(2)
+    integer  :: i
+    real(b8) :: x, y
+
+    x = 0.0_b8
+    y = 0.0_b8
+    i = 1
+    do while( rCell(i,1) /= 0 )
+        x = x + real(rCell(i,1))
+        y = y + real(rCell(i,2))
+        i = i + 1
+    enddo
+    i = i - 1
+    com(1) = x / real(i)
+    com(2) = y / real(i)
+end subroutine getCOM
+
+
+subroutine getChemotaxMetric( tf, comCell, CI, CR)
+    implicit none
+    integer,  intent(in)  :: tf
+    real(b8), intent(in)  :: comCell(:,:)
+    real(b8), intent(out) :: CI, CR
+    real(b8) :: displacement, distance
+    integer  :: t
+
+    displacement = sqrt( (comCell(tf,1) - comCell(1,1))**2 + (comCell(tf,2) - comCell(1,2))**2 )
+    distance = 0.0_b8
+    do t = 2, tf
+        distance = distance + sqrt( (comCell(t,1) - comCell(t-1,1))**2 + (comCell(t,2) - comCell(t-1,2))**2 )
+    enddo
+    CI = (comCell(tf,1) - comCell(1,1)) / displacement
+    CR = displacement / distance
+end subroutine getChemotaxMetric
+
+
+subroutine getCellSpeed( tf, dt, comCell, vCell)
+    implicit none
+    integer,  intent(in)  :: tf, dt
+    real(b8), intent(in)  :: comCell(:,:)
+    real(b8), intent(out) :: vCell(:)
+    real(b8) :: d
+    integer  :: i, t
+
+    vCell = 0.0_b8
+    i = 0
+    do t = 1+dt, tf, dt
+        i = i + 1
+        d = sqrt( (comCell(t,1) - comCell(t-dt,1))**2 + (comCell(t,2) - comCell(t-dt,2))**2 )
+        vCell(i) = d / real(dt)
+    enddo
+
+end subroutine getCellSpeed
+
+
 subroutine pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
     implicit none
     integer, intent(out) :: a(4), b(4)
@@ -79,6 +138,25 @@ subroutine pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
 end subroutine pickLatticePair
 
 
+! delete a pixel from a cell
+subroutine delpxCell( rCell, pxCell, px)
+    implicit none
+    integer, intent(inout) :: rCell(:,:)
+    integer, intent(in)    :: pxCell, px(2)
+    integer  :: i, j
+
+    do i = 1, pxCell
+        if ( px(1) == rCell(i,1) .AND. px(2) == rCell(i,2) ) then
+            rCell(i,:) = 0
+            do j = i+1, pxCell
+                rCell(j-1,:) = rCell(j,:)
+            enddo
+            exit
+        end if
+    enddo
+end subroutine delpxCell
+
+
 ! Output coordinates of the nearest neighbor (nn)
 subroutine nnGet( i, x, rSim, nn)
     ! i indicates the nn we are interested in
@@ -115,25 +193,6 @@ subroutine nnGet( i, x, rSim, nn)
     endif
 
 end subroutine nnGet
-
-
-! delete a pixel from a cell
-subroutine delpxCell( rCell, pxCell, px)
-    implicit none
-    integer, intent(inout) :: rCell(:,:)
-    integer, intent(in)    :: pxCell, px(2)
-    integer  :: i, j
-
-    do i = 1, pxCell
-        if ( px(1) == rCell(i,1) .AND. px(2) == rCell(i,2) ) then
-            rCell(i,:) = 0
-            do j = i+1, pxCell
-                rCell(j-1,:) = rCell(j,:)
-            enddo
-            exit
-        end if
-    enddo
-end subroutine delpxCell
 
 
 ! Count the number of occupied lattice points

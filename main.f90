@@ -13,7 +13,8 @@ integer :: i, j, k, n, nFill
 integer :: run, tMC, telem, elemMax
 
 real(b8) :: prob, r, w, ui, uf
-real(b8) :: globalSignal
+real(b8) :: CI, CR, vCell(tMCmax)
+real(b8) :: comCell(tMCmax,2), globalSignal
 real(b8), allocatable :: localSignal(:)
 
 integer :: a(4), b(4), rSim(2)
@@ -29,10 +30,25 @@ call init_random_seed()
 
 do run = 1, runTotal
     ! run a simulation instance
+    comCell = 0.0_b8
     call initSystem( rCell, rSim, elemMax, pxCell)
-    write(*,*) ' elemMax =', elemMax
-    write(*,*) '  pxCell =', pxCell
 
+    ! cell initialization time: cell shape and size relaxes before start of chemotaxis simulation
+    do i = 1, elemMax
+        call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
+        if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
+            cycle
+        end if
+        call getElemStep( a, b, rSim, rCell, pxCell, globalSignal, localSignal)
+    enddo
+
+    call getCOM( rCell, comCell(1,:))
+    if ( run == 1 ) then
+        write(*,*) ' elemMax =', elemMax
+        write(*,*) '  pxCell =', pxCell
+    end if
+
+    write(106,*) comCell(1,:)
     call wrtCell( rCell, pxCell, 0)
 
     do tMC = 1, tMCmax
@@ -50,65 +66,30 @@ do run = 1, runTotal
             ! !! CHECK STATS
 
             call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
-            if ( a(3) == b(3) ) then
+            if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
                 ! write(*,*), ' a =', a
                 ! write(*,*), ' b =', b
                 cycle
             end if
-            call getSignal( rCell, pxCell, globalSignal, localSignal)
-
-            if ( a(3) == 1 ) then
-                ! cell is adding a pixel
-                rTmp = 0
-                rTmp = rCell
-                pxTmp = pxCell + 1
-                rTmp(pxTmp,1:2) = b(1:2)
-
-                w = getWork( globalSignal, localSignal(a(4)), a(3))
-
-                ui = getEnergy( rSim, rCell, pxCell)
-                uf = getEnergy( rSim, rTmp,  pxTmp)
-
-                prob = getProb( uf, ui, w)
-            else
-                ! cell is removing a pixel
-                fill = 0
-                rTmp = 0
-                rTmp = rCell
-                pxTmp = pxCell - 1
-                call delpxCell( rTmp, pxTmp+1, b(1:2))
-                ! check if cell pixels are simply connected
-                call floodFill( rTmp(1,1:2), fill, rSim, rTmp(:,:))
-                call occupyCount( nFill, fill )
-                if ( nFill /= pxTmp .OR. pxTmp == 0 ) then
-                    ! cell is not simply connected
-                    ! write(*,*) 'nF=', nFill, 'pxTmp=', pxTmp
-                    prob = 0.0_b8
-                else
-                    w = getWork( globalSignal, localSignal(b(4)), a(3))
-
-                    ui = getEnergy( rSim, rCell, pxCell)
-                    uf = getEnergy( rSim, rTmp,  pxTmp)
-
-                    prob = getProb( uf, ui, w)
-                end if
-
-            end if
-
-            ! write(*,*) ' prob, w = ', prob, w
-
-            call random_number(r)
-            if ( r < prob ) then
-                 rCell =  rTmp
-                pxCell = pxTmp
-                ! write(*,*) 'success: a, b', a, b
-            end if
-
+            call getElemStep( a, b, rSim, rCell, pxCell, globalSignal, localSignal)
 
         enddo ! end of elementary time-step loop
-    call wrtCell( rCell, pxCell, tMC)
+        call getCOM( rCell, comCell(tMC,:))
+
+        write(106,*) comCell(tMC,:)
+        call wrtCell( rCell, pxCell, tMC)
 
     enddo ! end of Monte Carlo time-step loop
+
+    call getCellSpeed( tMC-1, 3, comCell, vCell)
+    call getChemotaxMetric( tMC-1, comCell, CI, CR)
+    write(121,*) CI, CR, run
+
+    i = 1
+    do while ( vCell(i) /= 0.0_b8 )
+        write(122,*) vCell(i), run
+        i = i + 1
+    enddo
 
 enddo
 

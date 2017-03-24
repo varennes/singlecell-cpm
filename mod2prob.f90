@@ -2,6 +2,7 @@ module probability
 ! module for calculating probability
 use parameters
 use sysconfig
+use sensing
 
 contains
 
@@ -74,5 +75,110 @@ real(b8) function jCheck( lCell, lnn, rCell, pxCell)
         jCheck = 0.0_b8
     endif
 end function jCheck
+
+
+! subroutine of all the steps neccasary for one elementary time-step
+subroutine getElemStep( a, b, rSim, rCell, pxCell, globalSignal, localSignal)
+    implicit none
+    integer, intent(in)     :: a(4), b(4), rSim(2)
+    integer, intent(inout)  :: rCell(:,:), pxCell
+    real(b8), intent(inout) :: globalSignal, localSignal(:)
+
+    integer  :: fill( 2*int(aCell/pxReal**2), 2), rTmp( 2*int(aCell/pxReal**2), 2)
+    integer  :: nFill, pxTmp
+    real(b8) :: prob, r, ui, uf, w
+
+    call getSignal( rCell, pxCell, globalSignal, localSignal)
+
+    fill = 0
+    rTmp = 0
+    rTmp = rCell
+    if ( a(3) == 1 ) then
+        ! cell is adding a pixel
+        pxTmp = pxCell + 1
+        rTmp(pxTmp,1:2) = b(1:2)
+
+        w = getWork( globalSignal, localSignal(a(4)), a(3))
+
+        ui = getEnergy( rSim, rCell, pxCell)
+        uf = getEnergy( rSim, rTmp,  pxTmp)
+
+        prob = getProb( uf, ui, w)
+    else
+        ! cell is removing a pixel
+        pxTmp = pxCell - 1
+        call delpxCell( rTmp, pxTmp+1, b(1:2))
+        ! check if cell pixels are simply connected
+        call floodFill( rTmp(1,1:2), fill, rSim, rTmp(:,:))
+        call occupyCount( nFill, fill )
+        if ( nFill /= pxTmp .OR. pxTmp == 0 ) then
+            ! cell is not simply connected
+            ! write(*,*) 'nF=', nFill, 'pxTmp=', pxTmp
+            prob = 0.0_b8
+        else
+            w = getWork( globalSignal, localSignal(b(4)), a(3))
+
+            ui = getEnergy( rSim, rCell, pxCell)
+            uf = getEnergy( rSim, rTmp,  pxTmp)
+
+            prob = getProb( uf, ui, w)
+        end if
+    end if
+    ! write(*,*) ' prob, w = ', prob, w
+    call random_number(r)
+    if ( r < prob ) then
+         rCell =  rTmp
+        pxCell = pxTmp
+        ! write(*,*) '  success: a, b', a, b
+    end if
+end subroutine getElemStep
+
+
+! subroutine of all the steps neccasary for one elementary initialization time-step
+subroutine getItlStep( a, b, rSim, rCell, pxCell)
+    implicit none
+    integer, intent(in)     :: a(4), b(4), rSim(2)
+    integer, intent(inout)  :: rCell(:,:), pxCell
+    integer  :: fill( 2*int(aCell/pxReal**2), 2), rTmp( 2*int(aCell/pxReal**2), 2)
+    integer  :: nFill, pxTmp
+    real(b8) :: prob, r, ui, uf, w
+
+    fill = 0
+    rTmp = 0
+    rTmp = rCell
+    if ( a(3) == 1 ) then
+        ! cell is adding a pixel
+        pxTmp = pxCell + 1
+        rTmp(pxTmp,1:2) = b(1:2)
+
+        w  = 0.0_b8
+        ui = getEnergy( rSim, rCell, pxCell)
+        uf = getEnergy( rSim, rTmp,  pxTmp)
+        prob = getProb( uf, ui, w)
+    else
+        ! cell is removing a pixel
+        pxTmp = pxCell - 1
+        call delpxCell( rTmp, pxTmp+1, b(1:2))
+        ! check if cell pixels are simply connected
+        call floodFill( rTmp(1,1:2), fill, rSim, rTmp(:,:))
+        call occupyCount( nFill, fill )
+        if ( nFill /= pxTmp .OR. pxTmp == 0 ) then
+            ! cell is not simply connected
+            ! write(*,*) 'nF=', nFill, 'pxTmp=', pxTmp
+            prob = 0.0_b8
+        else
+            w  = 0.0_b8
+            ui = getEnergy( rSim, rCell, pxCell)
+            uf = getEnergy( rSim, rTmp,  pxTmp)
+            prob = getProb( uf, ui, w)
+        end if
+    end if
+    call random_number(r)
+    if ( r < prob ) then
+         rCell =  rTmp
+        pxCell = pxTmp
+    end if
+end subroutine getItlStep
+
 
 end module
