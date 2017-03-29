@@ -14,7 +14,7 @@ integer :: run, tMC, telem, elemMax
 
 real(b8) :: prob, r, w, ui, uf
 real(b8) :: CI, CR, vCell(tMCmax)
-real(b8) :: comCell(tMCmax,2), globalSignal
+real(b8) :: comCell(tMCmax,2), pCell, globalSignal
 real(b8), allocatable :: localSignal(:)
 
 integer :: a(4), b(4), rSim(2)
@@ -31,7 +31,7 @@ call init_random_seed()
 do run = 1, runTotal
     ! run a simulation instance
     comCell = 0.0_b8
-    call initSystem( rCell, rSim, elemMax, pxCell)
+    call initSystem( rCell, rSim, elemMax, pxCell, pCell)
 
     ! cell initialization time: cell shape and size relaxes before start of chemotaxis simulation
     do i = 1, 4*elemMax
@@ -39,7 +39,7 @@ do run = 1, runTotal
         if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
             cycle
         end if
-        call getItlStep( a, b, rSim, rCell, pxCell)
+        call getItlStep( a, b, rSim, rCell, pxCell, pCell)
 
         ! j = 1
         ! do while( rCell(j,1) /= 0 )
@@ -81,7 +81,7 @@ do run = 1, runTotal
                 ! write(*,*), ' b =', b
                 cycle
             end if
-            call getElemStep( a, b, rSim, rCell, pxCell, globalSignal, localSignal)
+            call getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSignal)
 
         enddo ! end of elementary time-step loop
         call getCOM( rCell, comCell(tMC,:))

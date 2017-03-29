@@ -5,9 +5,10 @@ use parameters
 contains
 
 ! initialize system size and cell position
-subroutine initSystem( rCell, rSim, elemMax, pxCell)
+subroutine initSystem( rCell, rSim, elemMax, pxCell, pCell)
     implicit none
-    integer, intent(out) :: rCell(:,:), rSim(2), elemMax, pxCell
+    real(b8), intent(out) :: pCell
+    integer,  intent(out) :: rCell(:,:), rSim(2), elemMax, pxCell
     integer  :: i, j, k, lCell, lx, ly
 
     ! calculate cell length in terms of simulation lattices
@@ -30,13 +31,15 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell)
             rCell(k,2) = j + (lCell / 2)
         enddo
     enddo
+    pCell = 2.0_b8 * sqrt( pi * aCell)
+    elemMax = rSim(1) * rSim(2)
+    pxCell  = k
+
     write(*,*) ' rSim = ', rSim(:)
     write(*,*) ' cell x:', rCell(1,1), rCell(k,1)
     write(*,*) ' cell y:', rCell(1,2), rCell(k,2)
-    write(*,*) ' pxCell:', k
+    write(*,*) ' pxCell:', pxCell
     write(*,*)
-    elemMax = rSim(1) * rSim(2)
-    pxCell  = k
 end subroutine initSystem
 
 

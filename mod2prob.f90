@@ -16,28 +16,22 @@ end function getWork
 
 
 ! evaluate energy of the configuration
-real(b8) function getEnergy( rSim, rCell, pxCell)
+real(b8) function getEnergy( rSim, rCell, pxCell, pCell)
     implicit none
+    real(b8), intent(in) :: pCell
     integer,  intent(in) :: rSim(2), rCell(:,:), pxCell
     integer :: nn(2)
     integer :: i, j, perim
-    real(b8) :: areaCost, contact, sum1
+    real(b8) :: contact, areaCost, perimCost
 
-    ! sum energy contribution due to J
-    sum1 = 0.0_b8
+    ! get cell perimeter for contact energy and perimeter energy
     call perimCheck( rCell, pxCell, rSim, perim)
-    sum1 = alpha * real(perim)
-    ! do i = 1, pxCell
-    !     do j = 1, 4
-    !         call nnGet( j, rCell(i,1:2), rSim, nn)
-    !         contact = jCheck( rCell(i,1:2), nn, rCell, pxCell)
-    !         sum1 = sum1 + contact
-    !     enddo
-    ! enddo
+    contact = alpha * real(perim)
+    perimCost = lPerim * ( real(perim) - (pCell/pxReal))**2
 
     ! energy contribution due to area
     areaCost = lArea * ( real(pxCell) - (aCell/pxReal**2))**2
-    getEnergy = sum1 + areaCost
+    getEnergy = contact + areaCost + perimCost
 
 end function getEnergy
 
@@ -81,11 +75,11 @@ end function jCheck
 
 
 ! subroutine of all the steps neccasary for one elementary time-step
-subroutine getElemStep( a, b, rSim, rCell, pxCell, globalSignal, localSignal)
+subroutine getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSignal)
     implicit none
     integer, intent(in)     :: a(4), b(4), rSim(2)
     integer, intent(inout)  :: rCell(:,:), pxCell
-    real(b8), intent(inout) :: globalSignal, localSignal(:)
+    real(b8), intent(inout) :: globalSignal, localSignal(:), pCell
 
     integer  :: fill( 2*int(aCell/pxReal**2), 2), rTmp( 2*int(aCell/pxReal**2), 2)
     integer  :: nFill, pxTmp
@@ -103,8 +97,8 @@ subroutine getElemStep( a, b, rSim, rCell, pxCell, globalSignal, localSignal)
 
         w = getWork( globalSignal, localSignal(a(4)), a(3))
 
-        ui = getEnergy( rSim, rCell, pxCell)
-        uf = getEnergy( rSim, rTmp,  pxTmp)
+        ui = getEnergy( rSim, rCell, pxCell, pCell)
+        uf = getEnergy( rSim, rTmp,  pxTmp, pCell)
 
         prob = getProb( uf, ui, w)
     else
@@ -121,8 +115,8 @@ subroutine getElemStep( a, b, rSim, rCell, pxCell, globalSignal, localSignal)
         else
             w = getWork( globalSignal, localSignal(b(4)), a(3))
 
-            ui = getEnergy( rSim, rCell, pxCell)
-            uf = getEnergy( rSim, rTmp,  pxTmp)
+            ui = getEnergy( rSim, rCell, pxCell, pCell)
+            uf = getEnergy( rSim, rTmp,  pxTmp, pCell)
 
             prob = getProb( uf, ui, w)
         end if
@@ -138,10 +132,11 @@ end subroutine getElemStep
 
 
 ! subroutine of all the steps neccasary for one elementary initialization time-step
-subroutine getItlStep( a, b, rSim, rCell, pxCell)
+subroutine getItlStep( a, b, rSim, rCell, pxCell, pCell)
     implicit none
-    integer, intent(in)     :: a(4), b(4), rSim(2)
-    integer, intent(inout)  :: rCell(:,:), pxCell
+    real(b8), intent(in)    :: pCell
+    integer,  intent(in)    :: a(4), b(4), rSim(2)
+    integer,  intent(inout) :: rCell(:,:), pxCell
     integer  :: fill( 2*int(aCell/pxReal**2), 2), rTmp( 2*int(aCell/pxReal**2), 2)
     integer  :: nFill, pxTmp
     real(b8) :: prob, r, ui, uf, w
@@ -155,8 +150,8 @@ subroutine getItlStep( a, b, rSim, rCell, pxCell)
         rTmp(pxTmp,1:2) = b(1:2)
 
         w  = 0.0_b8
-        ui = getEnergy( rSim, rCell, pxCell)
-        uf = getEnergy( rSim, rTmp,  pxTmp)
+        ui = getEnergy( rSim, rCell, pxCell, pCell)
+        uf = getEnergy( rSim, rTmp,  pxTmp, pCell)
         prob = getProb( uf, ui, w)
     else
         ! cell is removing a pixel
@@ -171,8 +166,8 @@ subroutine getItlStep( a, b, rSim, rCell, pxCell)
             prob = 0.0_b8
         else
             w  = 0.0_b8
-            ui = getEnergy( rSim, rCell, pxCell)
-            uf = getEnergy( rSim, rTmp,  pxTmp)
+            ui = getEnergy( rSim, rCell, pxCell, pCell)
+            uf = getEnergy( rSim, rTmp,  pxTmp, pCell)
             prob = getProb( uf, ui, w)
         end if
     end if
