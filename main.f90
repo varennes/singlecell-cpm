@@ -39,7 +39,16 @@ do run = 1, runTotal
         if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
             cycle
         end if
-        call getElemStep( a, b, rSim, rCell, pxCell, globalSignal, localSignal)
+        call getItlStep( a, b, rSim, rCell, pxCell)
+
+        j = 1
+        do while( rCell(j,1) /= 0 )
+            j = j + 1
+        end do
+        j = j - 1
+        ! write(*,*) 'pxCell =', pxCell, '| count =', j
+        ! write(*,*)
+
     enddo
 
     call getCOM( rCell, comCell(1,:))

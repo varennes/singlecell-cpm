@@ -33,6 +33,8 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell)
     write(*,*) ' rSim = ', rSim(:)
     write(*,*) ' cell x:', rCell(1,1), rCell(k,1)
     write(*,*) ' cell y:', rCell(1,2), rCell(k,2)
+    write(*,*) ' pxCell:', k
+    write(*,*)
     elemMax = rSim(1) * rSim(2)
     pxCell  = k
 end subroutine initSystem
@@ -147,10 +149,12 @@ subroutine delpxCell( rCell, pxCell, px)
 
     do i = 1, pxCell
         if ( px(1) == rCell(i,1) .AND. px(2) == rCell(i,2) ) then
+            ! write(*,*) '   deleted, i=', i, '|', rCell(i,1:2)
             rCell(i,:) = 0
             do j = i+1, pxCell
                 rCell(j-1,:) = rCell(j,:)
             enddo
+            rCell(pxCell,:) = 0
             exit
         end if
     enddo
