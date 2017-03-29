@@ -20,18 +20,21 @@ real(b8) function getEnergy( rSim, rCell, pxCell)
     implicit none
     integer,  intent(in) :: rSim(2), rCell(:,:), pxCell
     integer :: nn(2)
-    integer :: i, j
+    integer :: i, j, perim
     real(b8) :: areaCost, contact, sum1
 
     ! sum energy contribution due to J
     sum1 = 0.0_b8
-    do i = 1, pxCell
-        do j = 1, 4
-            call nnGet( j, rCell(i,1:2), rSim, nn)
-            contact = jCheck( rCell(i,1:2), nn, rCell, pxCell)
-            sum1 = sum1 + contact
-        enddo
-    enddo
+    call perimCheck( rCell, pxCell, rSim, perim)
+    sum1 = alpha * real(perim)
+    ! do i = 1, pxCell
+    !     do j = 1, 4
+    !         call nnGet( j, rCell(i,1:2), rSim, nn)
+    !         contact = jCheck( rCell(i,1:2), nn, rCell, pxCell)
+    !         sum1 = sum1 + contact
+    !     enddo
+    ! enddo
+
     ! energy contribution due to area
     areaCost = lArea * ( real(pxCell) - (aCell/pxReal**2))**2
     getEnergy = sum1 + areaCost
@@ -177,8 +180,40 @@ subroutine getItlStep( a, b, rSim, rCell, pxCell)
     if ( r < prob ) then
          rCell =  rTmp
         pxCell = pxTmp
+        ! if ( a(3) == 1 ) then
+        !     write(*,*) ' cell +1 :', b(1:2)
+        ! else
+        !     write(*,*) ' cell -1 :', b(1:2)
+        ! end if
     end if
 end subroutine getItlStep
+
+
+! check whether cell pixel neighbors ECM
+subroutine perimCheck( rCell, pxCell, rSim, perim)
+    ! lCell = lattice site from cell list
+    implicit none
+    integer, intent(in)  :: rCell(:,:), pxCell, rSim(2)
+    integer, intent(out) :: perim
+    integer :: i, j, k, ecmCheck, nn(2)
+
+    perim = 0
+    do i = 1, pxCell
+        ! check neighbors of all cell pixels
+        do j = 1, 4
+            call nnGet( j, rCell(i,1:2), rSim, nn)
+            ecmCheck = 1
+            do k = 1, pxCell
+                if ( nn(1) == rCell(k,1) .AND. nn(2) == rCell(k,2) ) then
+                    ecmCheck = 0
+                    exit
+                end if
+            enddo
+            perim = perim + ecmCheck
+        enddo
+    enddo
+
+end subroutine perimCheck
 
 
 end module
