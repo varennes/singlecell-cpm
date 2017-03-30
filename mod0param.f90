@@ -15,7 +15,7 @@ real(b8), parameter :: g      =   0.8_b8   ! in nanoMolars / micron
 !!! SIMULATION PARAMETERS
 real(b8), parameter :: pxReal   =  1.0_b8 ! length of one lattice site in microns
 integer,  parameter :: lfinish  =  3      ! finish line in terms of cell lengths
-integer,  parameter :: runTotal =  1      ! total number of runs
+integer,  parameter :: runTotal =  3      ! total number of runs
 integer,  parameter :: tMCmax   = 50      ! max number of MC time-steps
 
 real(b8), parameter :: pi = 3.1415927_b8  ! pi

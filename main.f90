@@ -10,7 +10,7 @@ use wrtout
 ! allocate variables
 implicit none
 integer :: i, j, k, n, nFill
-integer :: run, tMC, telem, elemMax
+integer :: run, dt, tMC, telem, elemMax
 
 real(b8) :: prob, r, w, ui, uf
 real(b8) :: CI, CR, vCell(tMCmax)
@@ -20,6 +20,8 @@ real(b8), allocatable :: localSignal(:)
 integer :: a(4), b(4), rSim(2)
 integer :: pxCell, pxTmp
 integer, allocatable :: rCell(:,:), rTmp(:,:), fill(:,:)
+
+character(len=1024) :: filename
 
 allocate( localSignal( 2*int(aCell/pxReal**2)) )
 allocate( rCell( 2*int(aCell/pxReal**2), 2) )
@@ -33,6 +35,15 @@ do run = 1, runTotal
     comCell = 0.0_b8
     call initSystem( rCell, rSim, elemMax, pxCell, pCell)
 
+    if ( run == 1 ) then
+        write(*,*) ' rSim = ', rSim(:)
+        write(*,*) ' cell x:', rCell(1,1), rCell(pxCell,1)
+        write(*,*) ' cell y:', rCell(1,2), rCell(pxCell,2)
+        write(*,*) ' pxCell:', pxCell
+        write(*,*) ' elemMax =', elemMax
+        write(*,*)
+    end if
+
     ! cell initialization time: cell shape and size relaxes before start of chemotaxis simulation
     do i = 1, 4*elemMax
         call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
@@ -41,22 +52,9 @@ do run = 1, runTotal
         end if
         call getItlStep( a, b, rSim, rCell, pxCell, pCell)
 
-        ! j = 1
-        ! do while( rCell(j,1) /= 0 )
-        !     j = j + 1
-        ! end do
-        ! j = j - 1
-        ! call perimCheck( rCell, pxCell, rSim, k)
-        ! write(*,*) 'pxCell =', pxCell, '| perim =', k
-        ! write(*,*)
-
     enddo
 
     call getCOM( rCell, comCell(1,:))
-    if ( run == 1 ) then
-        write(*,*) ' elemMax =', elemMax
-        write(*,*) '  pxCell =', pxCell
-    end if
 
     write(106,*) comCell(1,:)
     call wrtCell( rCell, pxCell, 0)
@@ -64,21 +62,8 @@ do run = 1, runTotal
     do tMC = 1, tMCmax
         do telem = 1, elemMax
 
-            ! !! CHECK STATS
-            ! if ( tMC == 1 .AND. telem == 1 ) then
-            !     write(*,*) 'check 1'
-            !     do i = 1, 1000
-            !         call getSignal( rCell, pxCell, globalSignal, localSignal)
-            !         write(101,*) localSignal(1)
-            !         write(102,*) globalSignal
-            !     enddo
-            ! end if
-            ! !! CHECK STATS
-
             call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
             if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
-                ! write(*,*), ' a =', a
-                ! write(*,*), ' b =', b
                 cycle
             end if
             call getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSignal)
@@ -91,17 +76,21 @@ do run = 1, runTotal
 
     enddo ! end of Monte Carlo time-step loop
 
-    call getCellSpeed( tMC-1, 3, comCell, vCell)
+    dt = 3
+    call getCellSpeed( tMC-1, dt, comCell, vCell)
     call getChemotaxMetric( tMC-1, comCell, CI, CR)
-    write(121,*) CI, CR, run
 
-    i = 1
-    do while ( vCell(i) /= 0.0_b8 )
-        write(122,*) vCell(i), run
-        i = i + 1
-    enddo
+    call wrtChemotaxMetric( CI, CR, run)
+    call wrtInstSpeed( vCell, dt, run)
+
+    write(*,"(A14)", advance="no") 'complete run #'
+    write(*,"(I5)") run
 
 enddo
+
+close(12)
+close(13)
+close(14)
 
 deallocate( localSignal )
 deallocate( rCell )

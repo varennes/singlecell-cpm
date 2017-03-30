@@ -1,5 +1,6 @@
 # Output files
 fort.*
+*.dat
 
 # Directories
 data/*

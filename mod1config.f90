@@ -35,11 +35,6 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell, pCell)
     elemMax = rSim(1) * rSim(2)
     pxCell  = k
 
-    write(*,*) ' rSim = ', rSim(:)
-    write(*,*) ' cell x:', rCell(1,1), rCell(k,1)
-    write(*,*) ' cell y:', rCell(1,2), rCell(k,2)
-    write(*,*) ' pxCell:', pxCell
-    write(*,*)
 end subroutine initSystem
 
 

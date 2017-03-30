@@ -26,11 +26,11 @@ real(b8) function getEnergy( rSim, rCell, pxCell, pCell)
 
     ! get cell perimeter for contact energy and perimeter energy
     call perimCheck( rCell, pxCell, rSim, perim)
-    contact = alpha * real(perim)
-    perimCost = lPerim * ( real(perim) - (pCell/pxReal))**2
+    contact = alpha * pxReal**2 * real(perim)
+    perimCost = lPerim * pxReal * ( real(perim) - (pCell/pxReal))**2
 
     ! energy contribution due to area
-    areaCost = lArea * ( real(pxCell) - (aCell/pxReal**2))**2
+    areaCost = lArea * pxReal**4 * ( real(pxCell) - (aCell/pxReal**2))**2
     getEnergy = contact + areaCost + perimCost
 
 end function getEnergy
