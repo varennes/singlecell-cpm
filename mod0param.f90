@@ -4,9 +4,9 @@ module parameters
 integer,  parameter :: b8 = selected_real_kind(14)
 
 !!! REAL UNIT PARAMETERS !!!
-real(b8), parameter :: alpha  =   1.0_b8   ! in energy
-real(b8), parameter :: lArea  =   1.0_b8   ! in energy
-real(b8), parameter :: lPerim =   0.5_b8   ! in energy
+real(b8), parameter :: alpha  =   0.1_b8   ! in energy
+real(b8), parameter :: lArea  =   0.1_b8   ! in energy
+real(b8), parameter :: lPerim =   0.1_b8   ! in energy
 real(b8), parameter :: w0     =   1.0_b8   ! in energy
 real(b8), parameter :: aCell  = 100.0_b8   ! in microns^2
 real(b8), parameter :: c0     = 100.0_b8   ! in nanoMolars

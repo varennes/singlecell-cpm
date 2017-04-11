@@ -9,7 +9,7 @@ use wrtout
 
 ! allocate variables
 implicit none
-integer :: i, j, k, n, nFill
+integer :: i, iv, j, k, n, nFill
 integer :: run, dt, tMC, telem, elemMax
 
 real(b8) :: prob, r, w, ui, uf
@@ -56,8 +56,7 @@ do run = 1, runTotal
 
     call getCOM( rCell, comCell(1,:))
 
-    write(106,*) comCell(1,:)
-    call wrtCell( rCell, pxCell, 0)
+    ! call wrtCell( rCell, comCell(1,:), pxCell, 0)
 
     do tMC = 1, tMCmax
         do telem = 1, elemMax
@@ -71,17 +70,21 @@ do run = 1, runTotal
         enddo ! end of elementary time-step loop
         call getCOM( rCell, comCell(tMC,:))
 
-        write(106,*) comCell(tMC,:)
-        call wrtCell( rCell, pxCell, tMC)
+        ! call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
 
+        ! check if finish line hit
+        if ( comCell(tMC,1) > (real(rSim(1))-sqrt(aCell/pxReal**2)) ) then
+            write(*,*) '  finish line hit'
+            exit
+        end if
     enddo ! end of Monte Carlo time-step loop
 
-    dt = 3
-    call getCellSpeed( tMC-1, dt, comCell, vCell)
+    dt = 5
+    call getCellSpeed( tMC-1, dt, comCell, vCell, iv)
     call getChemotaxMetric( tMC-1, comCell, CI, CR)
 
     call wrtChemotaxMetric( CI, CR, run)
-    call wrtInstSpeed( vCell, dt, run)
+    call wrtInstSpeed( vCell, dt, run, iv)
 
     write(*,"(A14)", advance="no") 'complete run #'
     write(*,"(I5)") run

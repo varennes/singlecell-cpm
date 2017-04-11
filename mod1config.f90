@@ -18,7 +18,7 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell, pCell)
     end if
     ! set up simulation lattice size
     lx = 4 + lfinish       ! x size in terms of cell lengths
-    ly = 2                 ! y size in terms of cell lengths
+    ly = 3                 ! y size in terms of cell lengths
     rSim(1) = lx * lCell
     rSim(2) = ly * lCell
 
@@ -78,9 +78,10 @@ subroutine getChemotaxMetric( tf, comCell, CI, CR)
 end subroutine getChemotaxMetric
 
 
-subroutine getCellSpeed( tf, dt, comCell, vCell)
+subroutine getCellSpeed( tf, dt, comCell, vCell, iv)
     implicit none
     integer,  intent(in)  :: tf, dt
+    integer,  intent(out) :: iv
     real(b8), intent(in)  :: comCell(:,:)
     real(b8), intent(out) :: vCell(:)
     real(b8) :: d
@@ -93,7 +94,7 @@ subroutine getCellSpeed( tf, dt, comCell, vCell)
         d = sqrt( (comCell(t,1) - comCell(t-dt,1))**2 + (comCell(t,2) - comCell(t-dt,2))**2 )
         vCell(i) = d / real(dt)
     enddo
-
+    iv = i
 end subroutine getCellSpeed
 
 

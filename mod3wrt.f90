@@ -5,14 +5,17 @@ use parameters
 contains
 
 ! outputs x to fort.105
-subroutine wrtCell( rCell, pxCell, t)
+subroutine wrtCell( rCell, comCell, pxCell, t)
     implicit none
-    integer, intent(in) :: rCell(:,:), pxCell, t
+    real(b8), intent(in) :: comCell(2)
+    integer,  intent(in) :: rCell(:,:), pxCell, t
     integer :: i, j
 
     do i = 1, pxCell
         write(105,*) rCell(i,1), rCell(i,2), t
     enddo
+    write(106,*) comCell(:)
+
 end subroutine wrtCell
 
 
@@ -37,24 +40,22 @@ subroutine wrtChemotaxMetric( CI, CR, run)
 end subroutine wrtChemotaxMetric
 
 
-subroutine wrtInstSpeed( vCell, dt, run)
+subroutine wrtInstSpeed( vCell, dt, run, iv)
     implicit none
     real(b8), intent(in) :: vCell(:)
-    integer,  intent(in) :: dt, run
+    integer,  intent(in) :: dt, run, iv
     integer :: i, t
     character(len=1024) :: filename
 
     write (filename,"(A10)") 'v_inst.dat'
     open( 14, file=filename)
 
-    i = 1
-    t = i + dt
-    do while ( vCell(i) /= 0.0_b8 )
+    t = 1 + dt
+    do i = 1, iv
         write(14,"(E16.8)", advance="no") vCell(i)
         write(14,"(I7)", advance="no") t
         write(14,"(I7)", advance="no") run
         write(14,*) ''
-        i = i + 1
         t = t + dt
     enddo
 end subroutine wrtInstSpeed
