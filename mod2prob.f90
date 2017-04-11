@@ -184,7 +184,7 @@ subroutine getItlStep( a, b, rSim, rCell, pxCell, pCell)
 end subroutine getItlStep
 
 
-! check whether cell pixel neighbors ECM
+! count number of pixels neighboring ECM
 subroutine perimCheck( rCell, pxCell, rSim, perim)
     ! lCell = lattice site from cell list
     implicit none

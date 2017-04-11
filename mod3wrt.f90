@@ -1,6 +1,7 @@
 module wrtout
 ! module for output of simulation information
 use parameters
+use probability
 
 contains
 
@@ -59,6 +60,25 @@ subroutine wrtInstSpeed( vCell, dt, run, iv)
         t = t + dt
     enddo
 end subroutine wrtInstSpeed
+
+
+! write out cell aread and perimeter in simulation units
+subroutine wrtAspectRatio( pxCell, rCell, rSim, run)
+    implicit none
+    integer, intent(in)  :: rCell(:,:), pxCell, rSim(2), run
+    integer :: perim
+    character(len=1024) :: filename
+
+    call perimCheck( rCell, pxCell, rSim, perim)
+
+    write (filename,"(A10)") 'aspect.dat'
+    open( 15, file=filename)
+
+    write(15,"(I7)", advance="no") pxCell
+    write(15,"(I7)", advance="no") perim
+    write(15,"(I7)", advance="no") run
+    write(15,*) ''
+end subroutine wrtAspectRatio
 
 
 end module
