@@ -62,6 +62,25 @@ subroutine wrtInstSpeed( vCell, dt, run, iv)
 end subroutine wrtInstSpeed
 
 
+subroutine wrtMeanSpeed( vCell, run, iv)
+    implicit none
+    real(b8), intent(in) :: vCell(:)
+    integer,  intent(in) :: run, iv
+    real(b8) :: mean
+    character(len=1024) :: filename
+
+    write (filename,"(A10)") 'v_mean.dat'
+    open( 15, file=filename)
+
+    mean = sum(vCell(:))
+    mean = mean / float(iv)
+
+    write(15,"(E16.8)", advance="no") mean
+    write(15,"(I7)", advance="no") run
+    write(15,*) ''
+end subroutine wrtMeanSpeed
+
+
 ! write out cell aread and perimeter in simulation units
 subroutine wrtAspectRatio( pxCell, rCell, rSim, run)
     implicit none

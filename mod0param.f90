@@ -7,16 +7,16 @@ integer,  parameter :: b8 = selected_real_kind(14)
 real(b8), parameter :: alpha  =   0.1_b8   ! in energy
 real(b8), parameter :: lArea  =   0.1_b8   ! in energy
 real(b8), parameter :: lPerim =   0.1_b8   ! in energy
-real(b8), parameter :: w0     =   1.0_b8   ! in energy
-real(b8), parameter :: aCell  = 100.0_b8   ! in microns^2
-real(b8), parameter :: c0     = 100.0_b8   ! in nanoMolars
-real(b8), parameter :: g      =   0.8_b8   ! in nanoMolars / micron
+real(b8), parameter :: w0     =   0.1_b8   ! in energy
+real(b8), parameter :: aCell  = 400.0_b8   ! in microns^2
+real(b8), parameter :: c0     =   0.0_b8   ! in nanoMolars
+real(b8), parameter :: g      =   0.5_b8   ! in nanoMolars / micron
 
 !!! SIMULATION PARAMETERS
-real(b8), parameter :: pxReal   =  1.0_b8 ! length of one lattice site in microns
+real(b8), parameter :: pxReal   =  3.0_b8 ! length of one lattice site in microns
 integer,  parameter :: lfinish  =  3      ! finish line in terms of cell lengths
 integer,  parameter :: runTotal =  3      ! total number of runs
-integer,  parameter :: tMCmax   = 50      ! max number of MC time-steps
+integer,  parameter :: tMCmax   = 100     ! max number of MC time-steps
 
 real(b8), parameter :: pi = 3.1415927_b8  ! pi
 

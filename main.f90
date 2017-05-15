@@ -85,6 +85,7 @@ do run = 1, runTotal
 
     call wrtChemotaxMetric( CI, CR, run)
     call wrtInstSpeed( vCell, dt, run, iv)
+    call wrtMeanSpeed( vCell, run, iv)
 
     write(*,"(A14)", advance="no") 'complete run #'
     write(*,"(I5)") run
@@ -94,6 +95,7 @@ enddo
 close(12)
 close(13)
 close(14)
+close(15)
 
 deallocate( localSignal )
 deallocate( rCell )
