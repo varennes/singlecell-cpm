@@ -4,6 +4,7 @@ fort.*
 
 # Directories
 data/*
+test/*
 
 # Compiled Object files
 *.slo
