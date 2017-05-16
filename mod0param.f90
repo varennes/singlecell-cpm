@@ -4,7 +4,7 @@ module parameters
 integer,  parameter :: b8 = selected_real_kind(14)
 
 !!! REAL UNIT PARAMETERS !!!
-real(b8), parameter :: alpha  =  0.5_b8
+real(b8), parameter :: alpha =  0.5_b8
 real(b8), parameter :: lArea  =   0.1_b8
 real(b8), parameter :: lPerim =   0.1_b8
 real(b8), parameter :: w0     =   0.1_b8
@@ -16,7 +16,7 @@ real(b8), parameter :: g      =   0.05_b8
 real(b8), parameter :: pxReal   =  3.0_b8
 integer,  parameter :: lfinish  =  3
 integer,  parameter :: runTotal =  3
-integer,  parameter :: tMCmax   =  30
+integer,  parameter :: tMCmax = 30
 
 real(b8), parameter :: pi = 3.1415927_b8  ! pi
 

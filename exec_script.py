@@ -61,9 +61,9 @@ if __name__ == '__main__':
     # compile and run program for all parameters and values
     for ps in psList:
 
-        data_dir_location = 'data/test/' + ps
-        if not os.path.exists(data_dir_location):
-            os.makedirs(data_dir_location)
+        ps_subdir_location = 'data/test/' + ps
+        if not os.path.exists(ps_subdir_location):
+            os.makedirs(ps_subdir_location)
 
         i = psList.index(ps)
         for pv in pvList[i]:
@@ -74,7 +74,7 @@ if __name__ == '__main__':
             print "\n" + "\n"
 
             # move output files to desired directory
-            data_subdir = data_dir_location + '/' + str(pv)
+            data_subdir = ps_subdir_location + '/' + str(pv)
             if not os.path.exists(data_subdir):
                 os.makedirs(data_subdir)
             os.system("mv *.dat " + data_subdir)
