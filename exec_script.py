@@ -49,9 +49,29 @@ def compile():
 ###
 
 if __name__ == '__main__':
-    # list of paramater names and values to iterate over
-    psList = ["tMCmax", "alpha"]
-    pvList = [ [10, 20, 30], [0.1, 0.5]]
+    # all possible parameters and their default values
+    paramList = [
+    "alpha", "lArea", "lPerim",
+    "w0", "aCell",
+    "c0", "g",
+    "pxReal", "lfinish",
+    "runTotal", "tMCmax"
+    ]
+    paramDefault = [
+    0.3, 0.3, 0.3,
+    1.0, 400,
+    0.0, 0.05,
+    3.0, 3,
+    3, 10
+    ]
+    # iterate over psList of parameters with values contained in pvList
+    psList = ["tMCmax", "alpha", "g"]
+    pvList = [ [10, 20, 30], [0.1, 0.5], [1.0, 2.0]]
+
+    # set all paramters to their default values
+    for param in paramList:
+        i = paramList.index(param)
+        replaceParam( param, paramDefault[i])
 
     # check if directory for output data exists
     data_dir_location = 'data/test'
@@ -66,6 +86,13 @@ if __name__ == '__main__':
             os.makedirs(ps_subdir_location)
 
         i = psList.index(ps)
+        # reset previous parameters to their default value
+        for j in range(i):
+            param = psList[j]
+            jDefault = paramList.index(param)
+            replaceParam( param, paramDefault[jDefault])
+
+        # run program over all values of current parameter
         for pv in pvList[i]:
             replaceParam( ps, pv)
             compile()
