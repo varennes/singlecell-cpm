@@ -34,6 +34,9 @@ end module
 !    c0  = mean chemical concentration at x=0 in units of nanoMolars
 !     g  = mean gradient in units of nanoMolars / micron
 !
+! vecR = polarization vector decay rate, in units of 1 / (Monte Carlo time-steps)
+! vecE = strength of bias of polarization, in dimensionless units
+!
 !   pxReal = length of one lattice site in microns
 !  lfinish = finish line in terms of cell lengths
 ! runTotal = total number of runs

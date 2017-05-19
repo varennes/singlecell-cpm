@@ -24,6 +24,23 @@ real(b8) function getWorkAdpt1( global, local, sigma)
 end function getWorkAdpt1
 
 
+! work function using cell polarization vector
+real(b8) function getWork2( pVec, comCell, rTmp)
+    implicit none
+    real(b8), intent(in) :: pVec(2), comCell(2)
+    integer,  intent(in) :: rTmp(:,:)
+    real(b8) :: w, comDelta(2), comTmp(2)
+
+    call getCOM( rTmp, comTmp)
+    comDelta = comTmp - comCell
+    w = comDelta(1)*pVec(1) + comDelta(2)*pVec(2)
+    if ( w > 0.0 ) then
+        w = w / dsqrt( comDelta(1)**2 + comDelta(2)**2 )
+    end if
+    getWork2 = w
+end function getWork2
+
+
 ! evaluate energy of the configuration
 real(b8) function getEnergy( rSim, rCell, pxCell, pCell)
     implicit none
@@ -84,12 +101,12 @@ end function jCheck
 
 
 ! subroutine of all the steps neccasary for one elementary time-step
-subroutine getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSignal)
+subroutine getElemStep( a, b, rSim, rCell, pxCell, pCell, pVec, comCell, globalSignal, localSignal)
     implicit none
-    integer, intent(in)     :: a(4), b(4), rSim(2)
-    integer, intent(inout)  :: rCell(:,:), pxCell
+    integer,  intent(in)    :: a(4), b(4), rSim(2)
+    integer,  intent(inout) :: rCell(:,:), pxCell
     real(b8), intent(inout) :: globalSignal, localSignal(:), pCell
-
+    real(b8), intent(in)    :: pVec(2), comCell(2)
     integer  :: fill( 2*int(aCell/pxReal**2), 2), rTmp( 2*int(aCell/pxReal**2), 2)
     integer  :: nFill, pxTmp
     real(b8) :: prob, r, ui, uf, w
@@ -104,9 +121,7 @@ subroutine getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSig
         pxTmp = pxCell + 1
         rTmp(pxTmp,1:2) = b(1:2)
 
-        w = getWork( globalSignal, localSignal(a(4)), a(3))
-        ! w = getWorkAdpt1( globalSignal, localSignal(a(4)), a(3))
-
+        w    = getWork2(  pVec, comCell, rTmp)
         ui   = getEnergy( rSim, rCell, pxCell, pCell)
         uf   = getEnergy( rSim, rTmp,  pxTmp, pCell)
         prob = getProb( uf, ui, w)
@@ -122,9 +137,7 @@ subroutine getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSig
             ! write(*,*) 'nF=', nFill, 'pxTmp=', pxTmp
             prob = 0.0_b8
         else
-            w = getWork( globalSignal, localSignal(b(4)), a(3))
-            ! w = getWorkAdpt1( globalSignal, localSignal(b(4)), a(3))
-
+            w    = getWork2(  pVec, comCell, rTmp)
             ui   = getEnergy( rSim, rCell, pxCell, pCell)
             uf   = getEnergy( rSim, rTmp,  pxTmp, pCell)
             prob = getProb( uf, ui, w)

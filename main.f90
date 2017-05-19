@@ -14,7 +14,7 @@ integer :: run, dt, tMC, telem, elemMax
 
 real(b8) :: prob, r, w, ui, uf
 real(b8) :: CI, CR, vCell(tMCmax)
-real(b8) :: comCell(tMCmax,2), pCell, globalSignal
+real(b8) :: comCell(tMCmax,2), pVec(2), pCell, globalSignal
 real(b8), allocatable :: localSignal(:)
 
 integer :: a(4), b(4), rSim(2)
@@ -57,6 +57,7 @@ do run = 1, runTotal
     call getCOM( rCell, comCell(1,:))
 
     ! call wrtCell( rCell, comCell(1,:), pxCell, 0)
+    pVec(:) = 0.0_b8
 
     do tMC = 1, tMCmax
         do telem = 1, elemMax
@@ -65,10 +66,11 @@ do run = 1, runTotal
             if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
                 cycle
             end if
-            call getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSignal)
+            call getElemStep( a, b, rSim, rCell, pxCell, pCell, pVec, comCell(tMC,:), globalSignal, localSignal)
 
         enddo ! end of elementary time-step loop
         call getCOM( rCell, comCell(tMC,:))
+        call updatePolarity( pVec, comCell(tMC,:), rSim, rCell, pxCell, globalSignal, localSignal)
 
         ! call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
 
