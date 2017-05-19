@@ -12,7 +12,7 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell, pCell)
     integer  :: i, j, k, lCell, lx, ly
 
     ! calculate cell length in terms of simulation lattices
-    lCell = int(sqrt(aCell/pxReal**2))
+    lCell = int(dsqrt(aCell/pxReal**2))
     if ( lCell == 0 ) then
         lCell = 1
     end if
@@ -31,7 +31,7 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell, pCell)
             rCell(k,2) = j + (lCell / 2)
         enddo
     enddo
-    pCell = 2.0_b8 * sqrt( pi * aCell)
+    pCell = 2.0_b8 * dsqrt( pi * aCell)
     elemMax = rSim(1) * rSim(2)
     pxCell  = k
 
@@ -68,10 +68,10 @@ subroutine getChemotaxMetric( tf, comCell, CI, CR)
     real(b8) :: displacement, distance
     integer  :: t
 
-    displacement = sqrt( (comCell(tf,1) - comCell(1,1))**2 + (comCell(tf,2) - comCell(1,2))**2 )
+    displacement = dsqrt( (comCell(tf,1) - comCell(1,1))**2 + (comCell(tf,2) - comCell(1,2))**2 )
     distance = 0.0_b8
     do t = 2, tf
-        distance = distance + sqrt( (comCell(t,1) - comCell(t-1,1))**2 + (comCell(t,2) - comCell(t-1,2))**2 )
+        distance = distance + dsqrt( (comCell(t,1) - comCell(t-1,1))**2 + (comCell(t,2) - comCell(t-1,2))**2 )
     enddo
     CI = (comCell(tf,1) - comCell(1,1)) / displacement
     CR = displacement / distance
@@ -91,7 +91,7 @@ subroutine getCellSpeed( tf, dt, comCell, vCell, iv)
     i = 0
     do t = 1+dt, tf, dt
         i = i + 1
-        d = sqrt( (comCell(t,1) - comCell(t-dt,1))**2 + (comCell(t,2) - comCell(t-dt,2))**2 )
+        d = dsqrt( (comCell(t,1) - comCell(t-dt,1))**2 + (comCell(t,2) - comCell(t-dt,2))**2 )
         vCell(i) = d / real(dt)
     enddo
     iv = i

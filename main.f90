@@ -84,8 +84,8 @@ do run = 1, runTotal
     call getChemotaxMetric( tMC-1, comCell, CI, CR)
 
     call wrtChemotaxMetric( CI, CR, run)
-    call wrtInstSpeed( vCell, dt, run, iv)
     call wrtMeanSpeed( vCell, run, iv)
+    ! call wrtInstSpeed( vCell, dt, run, iv)
 
     write(*,"(A14)", advance="no") 'complete run #'
     write(*,"(I5)") run

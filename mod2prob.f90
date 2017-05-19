@@ -15,6 +15,15 @@ real(b8) function getWork( global, local, sigma)
 end function getWork
 
 
+real(b8) function getWorkAdpt1( global, local, sigma)
+    implicit none
+    real(b8), intent(in) :: global, local
+    integer,  intent(in) :: sigma
+
+    getWorkAdpt1 = w0 * (local-global) * (-1.0_b8)**(1-sigma) / global
+end function getWorkAdpt1
+
+
 ! evaluate energy of the configuration
 real(b8) function getEnergy( rSim, rCell, pxCell, pCell)
     implicit none
@@ -96,10 +105,10 @@ subroutine getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSig
         rTmp(pxTmp,1:2) = b(1:2)
 
         w = getWork( globalSignal, localSignal(a(4)), a(3))
+        ! w = getWorkAdpt1( globalSignal, localSignal(a(4)), a(3))
 
-        ui = getEnergy( rSim, rCell, pxCell, pCell)
-        uf = getEnergy( rSim, rTmp,  pxTmp, pCell)
-
+        ui   = getEnergy( rSim, rCell, pxCell, pCell)
+        uf   = getEnergy( rSim, rTmp,  pxTmp, pCell)
         prob = getProb( uf, ui, w)
     else
         ! cell is removing a pixel
@@ -114,10 +123,10 @@ subroutine getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSig
             prob = 0.0_b8
         else
             w = getWork( globalSignal, localSignal(b(4)), a(3))
+            ! w = getWorkAdpt1( globalSignal, localSignal(b(4)), a(3))
 
-            ui = getEnergy( rSim, rCell, pxCell, pCell)
-            uf = getEnergy( rSim, rTmp,  pxTmp, pCell)
-
+            ui   = getEnergy( rSim, rCell, pxCell, pCell)
+            uf   = getEnergy( rSim, rTmp,  pxTmp, pCell)
             prob = getProb( uf, ui, w)
         end if
     end if
