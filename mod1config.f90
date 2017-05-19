@@ -31,7 +31,7 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell, pCell)
             rCell(k,2) = j + (lCell / 2)
         enddo
     enddo
-    pCell = 2.0_b8 * dsqrt( pi * aCell)
+    pCell = 2.0_b8 * dsqrt( pi * aCell) ! Desired cell perimeter, assuming circular cell shape
     elemMax = rSim(1) * rSim(2)
     pxCell  = k
 

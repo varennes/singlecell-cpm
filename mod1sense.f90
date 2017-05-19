@@ -1,6 +1,7 @@
 module sensing
 ! module for chemical sensing
 use parameters
+use sysconfig
 
 contains
 
@@ -38,6 +39,49 @@ subroutine getSignal( rCell, pxCell, globalSignal, localSignal)
     enddo
     globalSignal = sum( localSignal) / real( pxCell)
 end subroutine getSignal
+
+
+subroutine updatePolarity( pVec, comCell, rSim, rCell, pxCell, globalSignal, localSignal)
+    implicit none
+    real(b8), intent(inout) :: pVec(2), globalSignal, localSignal(:)
+    real(b8), intent(in)    :: comCell(2)
+    integer, intent(in)     :: rSim(2), rCell(:,:), pxCell
+    integer  :: i, j, k, edgeCheck, edgeN, nn(2)
+    real(b8) :: norm, edgeVec(2), tempVec(2)
+
+    call getSignal( rCell, pxCell, globalSignal, localSignal)
+
+    ! iterate over all pixels and identify edge pixels
+    edgeN = 0
+    edgeVec(:) = 0.0_b8
+    do i = 1, pxCell
+        edgeCheck = 4
+        ! check neighbors of all cell pixels
+        do j = 1, 4
+            call nnGet( j, rCell(i,1:2), rSim, nn)
+            do k = 1, pxCell
+                if ( nn(1) == rCell(k,1) .AND. nn(2) == rCell(k,2) ) then
+                    edgeCheck = edgeCheck - 1
+                    exit
+                end if
+            enddo
+        enddo
+        if ( edgeCheck > 0 ) then
+            edgeN = edgeN + 1
+            ! pixel is an edge pixel
+            tempVec(:) = 0.0_b8
+            norm  = dsqrt( (real(rCell(i,1))-comCell(1))**2 + (real(rCell(i,2))-comCell(2))**2 )
+            do j = 1, 2
+                tempVec(j) = ( real(rCell(i,j)) - comCell(j) ) / norm * (localSignal(i) - globalSignal) / globalSignal
+                edgeVec(j) = edgeVec(j) + tempVec(j)
+            enddo
+        end if
+    enddo
+    edgeVec = edgeVec / real(edgeN)
+
+    pVec = (1.0_b8 - vecR)*pVec + (vecR * vecE)*edgeVec
+
+end subroutine updatePolarity
 
 
 ! returns random number between 0 - 1

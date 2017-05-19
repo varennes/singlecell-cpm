@@ -11,6 +11,8 @@ real(b8), parameter :: w0 =  1.0_b8
 real(b8), parameter :: aCell =  400.0_b8
 real(b8), parameter :: c0 =  0.0_b8
 real(b8), parameter :: g =  2.0_b8
+real(b8), parameter :: vecR = 0.10_b8
+real(b8), parameter :: vecE = 1.0_b8
 
 !!! SIMULATION PARAMETERS
 real(b8), parameter :: pxReal =  3.0_b8

@@ -184,11 +184,6 @@ subroutine getItlStep( a, b, rSim, rCell, pxCell, pCell)
     if ( r < prob ) then
          rCell =  rTmp
         pxCell = pxTmp
-        ! if ( a(3) == 1 ) then
-        !     write(*,*) ' cell +1 :', b(1:2)
-        ! else
-        !     write(*,*) ' cell -1 :', b(1:2)
-        ! end if
     end if
 end subroutine getItlStep
 
