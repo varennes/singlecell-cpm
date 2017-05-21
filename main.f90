@@ -10,7 +10,7 @@ use wrtout
 ! allocate variables
 implicit none
 integer :: i, iv, j, k, n, nFill
-integer :: run, dt, tMC, telem, elemMax
+integer :: run, dt, t, tMC, telem, elemMax
 
 real(b8) :: prob, r, w, ui, uf
 real(b8) :: CI, CR, vCell(tMCmax)
@@ -52,12 +52,15 @@ do run = 1, runTotal
         end if
         call getItlStep( a, b, rSim, rCell, pxCell, pCell)
 
+        call getCOM( rCell, comCell(1,:))
+        call updatePolarity( pVec, comCell(1,:), rSim, rCell, pxCell, globalSignal, localSignal)
     enddo
 
+    ! pVec(:) = 0.0_b8
     call getCOM( rCell, comCell(1,:))
 
-    ! call wrtCell( rCell, comCell(1,:), pxCell, 0)
-    pVec(:) = 0.0_b8
+    call wrtCell( rCell, comCell(1,:), pxCell, 0)
+    call wrtPolarity( pVec, 0)
 
     do tMC = 1, tMCmax
         do telem = 1, elemMax
@@ -72,7 +75,11 @@ do run = 1, runTotal
         call getCOM( rCell, comCell(tMC,:))
         call updatePolarity( pVec, comCell(tMC,:), rSim, rCell, pxCell, globalSignal, localSignal)
 
-        ! call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
+        if ( mod(tMC,10) == 0 ) then
+            t = tMC / 10
+            call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
+            call wrtPolarity( pVec, tMC)
+        end if
 
         ! check if finish line hit
         if ( comCell(tMC,1) > (real(rSim(1))-sqrt(aCell/pxReal**2)) ) then
@@ -85,8 +92,8 @@ do run = 1, runTotal
     call getCellSpeed( tMC-1, dt, comCell, vCell, iv)
     call getChemotaxMetric( tMC-1, comCell, CI, CR)
 
-    call wrtChemotaxMetric( CI, CR, run)
-    call wrtMeanSpeed( vCell, run, iv)
+    ! call wrtChemotaxMetric( CI, CR, run)
+    ! call wrtMeanSpeed( vCell, run, iv)
     ! call wrtInstSpeed( vCell, dt, run, iv)
 
     write(*,"(A14)", advance="no") 'complete run #'

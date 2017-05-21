@@ -34,10 +34,10 @@ real(b8) function getWork2( pVec, comCell, rTmp)
     call getCOM( rTmp, comTmp)
     comDelta = comTmp - comCell
     w = comDelta(1)*pVec(1) + comDelta(2)*pVec(2)
-    if ( w > 0.0 ) then
+    if ( abs(w) > 0.0 ) then
         w = w / dsqrt( comDelta(1)**2 + comDelta(2)**2 )
     end if
-    getWork2 = w
+    getWork2 = 1.0_b8 * w
 end function getWork2
 
 
@@ -52,11 +52,11 @@ real(b8) function getEnergy( rSim, rCell, pxCell, pCell)
 
     ! get cell perimeter for contact energy and perimeter energy
     call perimCheck( rCell, pxCell, rSim, perim)
-    contact = alpha * pxReal**2 * real(perim)
-    perimCost = lPerim * pxReal * ( real(perim) - (pCell/pxReal))**2
+    contact   = alpha  * real(perim)
+    perimCost = lPerim * ( real(perim) - (pCell/pxReal))**2
 
     ! energy contribution due to area
-    areaCost = lArea * pxReal**4 * ( real(pxCell) - (aCell/pxReal**2))**2
+    areaCost  = lArea * ( real(pxCell) - (aCell/pxReal**2))**2
     getEnergy = contact + areaCost + perimCost
 
 end function getEnergy
@@ -72,7 +72,7 @@ real(b8) function getProb( uNew, uOld, w)
     du = uNew - uOld
     ! calculate probability
     getProb = exp( min(0.0, w - du ) )
-
+    ! write(*,*) 'du =',du, '  w =', w, ' p =', exp( min(0.0, w - du ) )
 end function getProb
 
 

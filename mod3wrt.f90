@@ -5,7 +5,8 @@ use probability
 
 contains
 
-! outputs x to fort.105
+! outputs cell pixel locations to fort.105
+! outputs cell center of mass to fort.106
 subroutine wrtCell( rCell, comCell, pxCell, t)
     implicit none
     real(b8), intent(in) :: comCell(2)
@@ -15,9 +16,19 @@ subroutine wrtCell( rCell, comCell, pxCell, t)
     do i = 1, pxCell
         write(105,*) rCell(i,1), rCell(i,2), t
     enddo
-    write(106,*) comCell(:)
+    write(106,*) comCell(:), t
 
 end subroutine wrtCell
+
+
+subroutine wrtPolarity( pVec, t)
+    implicit none
+    real(b8), intent(in) :: pVec(2)
+    integer,  intent(in) :: t
+
+    write(107,*) pVec(:), t
+
+end subroutine wrtPolarity
 
 
 subroutine wrtChemotaxMetric( CI, CR, run)
