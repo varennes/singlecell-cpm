@@ -15,7 +15,7 @@ subroutine wrtCell( rCell, comCell, pxCell, t)
     do i = 1, pxCell
         write(105,*) rCell(i,1), rCell(i,2), t
     enddo
-    write(106,*) comCell(:)
+    write(106,*) comCell(:), t
 
 end subroutine wrtCell
 
