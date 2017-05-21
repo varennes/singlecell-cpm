@@ -45,6 +45,7 @@ do run = 1, runTotal
     end if
 
     ! cell initialization time: cell shape and size relaxes before start of chemotaxis simulation
+    pVec(:) = 0.0_b8
     do i = 1, 4*elemMax
         call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
         if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
@@ -56,7 +57,6 @@ do run = 1, runTotal
         call updatePolarity( pVec, comCell(1,:), rSim, rCell, pxCell, globalSignal, localSignal)
     enddo
 
-    ! pVec(:) = 0.0_b8
     call getCOM( rCell, comCell(1,:))
 
     call wrtCell( rCell, comCell(1,:), pxCell, 0)
@@ -76,7 +76,6 @@ do run = 1, runTotal
         call updatePolarity( pVec, comCell(tMC,:), rSim, rCell, pxCell, globalSignal, localSignal)
 
         if ( mod(tMC,10) == 0 ) then
-            t = tMC / 10
             call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
             call wrtPolarity( pVec, tMC)
         end if
