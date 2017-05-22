@@ -56,7 +56,7 @@ do run = 1, runTotal
 
     call getCOM( rCell, comCell(1,:))
 
-    call wrtCell( rCell, comCell(1,:), pxCell, 0)
+    ! call wrtCell( rCell, comCell(1,:), pxCell, 0)
 
     do tMC = 1, tMCmax
         do telem = 1, elemMax
@@ -70,9 +70,9 @@ do run = 1, runTotal
         enddo ! end of elementary time-step loop
         call getCOM( rCell, comCell(tMC,:))
 
-        if ( mod(tMC,10) == 0 ) then
-            call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
-        end if
+        ! if ( mod(tMC,10) == 0 ) then
+        !     call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
+        ! end if
 
         ! check if finish line hit
         if ( comCell(tMC,1) > (real(rSim(1))-sqrt(aCell/pxReal**2)) ) then
@@ -85,6 +85,7 @@ do run = 1, runTotal
     call getCellSpeed( tMC-1, dt, comCell, vCell, iv)
     call getChemotaxMetric( tMC-1, comCell, CI, CR)
 
+    call wrtDisplacement( comCell(tMC-1,:), comCell(1,:), tMC-1, run)
     ! call wrtChemotaxMetric( CI, CR, run)
     ! call wrtMeanSpeed( vCell, run, iv)
     ! call wrtInstSpeed( vCell, dt, run, iv)
@@ -98,6 +99,8 @@ close(12)
 close(13)
 close(14)
 close(15)
+close(16)
+close(21)
 
 deallocate( localSignal )
 deallocate( rCell )

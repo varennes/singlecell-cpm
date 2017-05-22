@@ -15,8 +15,8 @@ real(b8), parameter :: g =  1.0_b8
 !!! SIMULATION PARAMETERS
 real(b8), parameter :: pxReal =  3.0_b8
 integer,  parameter :: lfinish =  3
-integer,  parameter :: runTotal =  1
-integer,  parameter :: tMCmax =  500
+integer,  parameter :: runTotal =  3
+integer,  parameter :: tMCmax =  100
 
 real(b8), parameter :: pi = 3.1415927_b8  ! pi
 

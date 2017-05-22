@@ -6,6 +6,7 @@ use probability
 contains
 
 ! outputs x to fort.105
+! outputs center-of-mass (COM) to fort.106
 subroutine wrtCell( rCell, comCell, pxCell, t)
     implicit none
     real(b8), intent(in) :: comCell(2)
@@ -18,6 +19,26 @@ subroutine wrtCell( rCell, comCell, pxCell, t)
     write(106,*) comCell(:), t
 
 end subroutine wrtCell
+
+
+! output x, y displacement and squared displacement
+subroutine wrtDisplacement( comCell, com0, t, run)
+    implicit none
+    real(b8), intent(in) :: comCell(2), com0(2)
+    integer,  intent(in) :: run, t
+    character(len=1024)  :: filename
+    real(b8) :: r2
+    r2 = (comCell(1) - com0(1))**2 + (comCell(2) - com0(2))**2
+    write (filename,"(A11)") 'dsplcmt.dat'
+    open( 21, file=filename)
+
+    write(21,"(E16.8)", advance="no") comCell(1) - com0(1)
+    write(21,"(E16.8)", advance="no") comCell(2) - com0(2)
+    write(21,"(E16.8)", advance="no") r2
+    write(21,"(I7)",    advance="no") t
+    write(21,"(I7)",    advance="no") run
+    write(21,*) ''
+end subroutine wrtDisplacement
 
 
 subroutine wrtChemotaxMetric( CI, CR, run)
@@ -91,12 +112,12 @@ subroutine wrtAspectRatio( pxCell, rCell, rSim, run)
     call perimCheck( rCell, pxCell, rSim, perim)
 
     write (filename,"(A10)") 'aspect.dat'
-    open( 15, file=filename)
+    open( 16, file=filename)
 
-    write(15,"(I7)", advance="no") pxCell
-    write(15,"(I7)", advance="no") perim
-    write(15,"(I7)", advance="no") run
-    write(15,*) ''
+    write(16,"(I7)", advance="no") pxCell
+    write(16,"(I7)", advance="no") perim
+    write(16,"(I7)", advance="no") run
+    write(16,*) ''
 end subroutine wrtAspectRatio
 
 
