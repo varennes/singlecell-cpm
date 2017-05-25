@@ -14,7 +14,7 @@ integer :: run, dt, tMC, telem, elemMax
 
 real(b8) :: prob, r, w, ui, uf
 real(b8) :: CI, CR, vCell(tMCmax)
-real(b8) :: comCell(tMCmax,2), pCell, globalSignal
+real(b8) :: comCell(tMCmax,2), pCell, plrVec(2), globalSignal
 real(b8), allocatable :: localSignal(:)
 
 integer :: a(4), b(4), rSim(2)
@@ -39,8 +39,8 @@ do run = 1, runTotal
         write(*,*) ' rSim = ', rSim(:)
         write(*,*) ' cell x:', rCell(1,1), rCell(pxCell,1)
         write(*,*) ' cell y:', rCell(1,2), rCell(pxCell,2)
-        write(*,*) ' pxCell:', pxCell
-        write(*,*) ' elemMax =', elemMax
+        write(*,*) ' pxCell:   ',   pxCell, '| elemMax =', elemMax
+        write(*,*) ' runTotal =', runTotal, '| tMCmax =', tMCmax
         write(*,*)
     end if
 
@@ -57,22 +57,25 @@ do run = 1, runTotal
     call getCOM( rCell, comCell(1,:))
 
     ! call wrtCell( rCell, comCell(1,:), pxCell, 0)
-
+    plrVec = 0.0_b8
+    write(107,*) plrVec, 0
     do tMC = 1, tMCmax
+        call getCOM( rCell, comCell(tMC,:))
+        call getVectorUpdate( plrVec, rCell, pxCell, comCell(tMC,:), globalSignal, localSignal, rSim)
         do telem = 1, elemMax
 
             call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
             if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
                 cycle
             end if
-            call getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSignal)
+            call getVectorStep( a, b, rSim, rCell, pxCell, pCell, plrVec)
 
         enddo ! end of elementary time-step loop
-        call getCOM( rCell, comCell(tMC,:))
 
-        ! if ( mod(tMC,10) == 0 ) then
-        !     call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
-        ! end if
+        if ( mod(tMC,1) == 0 ) then
+            write(107,*) plrVec, tMC
+            ! call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
+        end if
 
         ! check if finish line hit
         if ( comCell(tMC,1) > (real(rSim(1))-sqrt(aCell/pxReal**2)) ) then
