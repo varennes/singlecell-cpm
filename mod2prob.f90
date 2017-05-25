@@ -95,6 +95,7 @@ subroutine getVectorUpdate( plrVec, rCell, pxCell, com, globalSignal, localSigna
     ! write(*,*) 'q = ', q, 'edgeTotal =', edgeTotal, ' qnorm =', q / real(edgeTotal)
     q = q / real(edgeTotal)
     plrVec = plrVec + rVec*( -plrVec + eVec*q)
+    plrVec = (1.0_b8 - rVec)*plrVec + eVec*q
 
 end subroutine getVectorUpdate
 

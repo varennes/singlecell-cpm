@@ -7,18 +7,18 @@ integer,  parameter :: b8 = selected_real_kind(14)
 real(b8), parameter :: alpha =  0.3_b8
 real(b8), parameter :: lArea =  0.1_b8
 real(b8), parameter :: lPerim =  0.01_b8
-real(b8), parameter :: w0 =  0.5_b8
+real(b8), parameter :: w0 =  1.0_b8
 real(b8), parameter :: aCell =  400.0_b8
 real(b8), parameter :: c0 =  0.0_b8
 real(b8), parameter :: g =  1.0_b8
-real(b8), parameter :: rVec = 0.5_b8
-real(b8), parameter :: eVec = 1.0_b8
+real(b8), parameter :: rVec =  0.1_b8
+real(b8), parameter :: eVec =  0.01_b8
 
 !!! SIMULATION PARAMETERS
 real(b8), parameter :: pxReal =  3.0_b8
-integer,  parameter :: lfinish =  3
-integer,  parameter :: runTotal = 50
-integer,  parameter :: tMCmax =   50
+integer,  parameter :: lfinish =  4
+integer,  parameter :: runTotal =  50
+integer,  parameter :: tMCmax =  150
 
 real(b8), parameter :: pi = 3.1415927_b8  ! pi
 

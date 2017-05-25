@@ -72,10 +72,10 @@ do run = 1, runTotal
 
         enddo ! end of elementary time-step loop
 
-        if ( mod(tMC,1) == 0 ) then
-            write(107,*) plrVec, tMC
-            ! call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
-        end if
+        ! if ( mod(tMC,1) == 0 ) then
+        !     write(107,*) plrVec, tMC
+        !     call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
+        ! end if
 
         ! check if finish line hit
         if ( comCell(tMC,1) > (real(rSim(1))-sqrt(aCell/pxReal**2)) ) then
@@ -89,8 +89,8 @@ do run = 1, runTotal
     call getChemotaxMetric( tMC-1, comCell, CI, CR)
 
     call wrtDisplacement( comCell(tMC-1,:), comCell(1,:), tMC-1, run)
-    ! call wrtChemotaxMetric( CI, CR, run)
-    ! call wrtMeanSpeed( vCell, run, iv)
+    call wrtChemotaxMetric( CI, CR, run)
+    call wrtMeanSpeed( vCell, run, iv)
     ! call wrtInstSpeed( vCell, dt, run, iv)
 
     write(*,"(A14)", advance="no") 'complete run #'

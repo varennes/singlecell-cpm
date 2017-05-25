@@ -8,8 +8,11 @@ import os
 # function adapted from https://gist.github.com/kirang89/6478017
 def replaceParam( param, newValue):
     paramList = [
-    "alpha", "lArea", "lPerim", "w0", "aCell", "c0", "g",
-    "pxReal", "lfinish", "runTotal", "tMCmax"
+    "alpha", "lArea", "lPerim",
+    "c0", "g",
+    "rVec", "eVec",
+    "aCell", "pxReal",
+    "lfinish", "runTotal", "tMCmax"
     ]
     if paramList.index(param) > 7:
         sOld = "integer,  parameter :: " + param
@@ -52,21 +55,22 @@ if __name__ == '__main__':
     # all possible parameters and their default values
     paramList = [
     "alpha", "lArea", "lPerim",
-    "w0", "aCell",
     "c0", "g",
-    "pxReal", "lfinish",
-    "runTotal", "tMCmax"
+    "rVec", "eVec",
+    "aCell", "pxReal",
+    "lfinish", "runTotal", "tMCmax"
     ]
     paramDefault = [
-    0.3, 0.3, 0.3,
-    1.0, 400,
-    0.0, 0.05,
-    3.0, 3,
-    3, 10
+    0.3, 0.1, 0.01,
+    0.0, 1.0,
+    0.1, 1.0,
+    400, 3,
+    4, 50, 150
     ]
     # iterate over psList of parameters with values contained in pvList
-    psList = ["tMCmax", "alpha", "g"]
-    pvList = [ [10, 20, 30], [0.1, 0.5], [1.0, 2.0]]
+    psList = ["tMCmax"]
+    psList = ["eVec"]
+    pvList = [ [2.0, 1.0, 0.5, 0.1, 0.01]]
 
     # set all paramters to their default values
     for param in paramList:
