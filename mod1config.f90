@@ -53,6 +53,9 @@ subroutine getCOM( rCell, com)
         x = x + real(rCell(i,1))
         y = y + real(rCell(i,2))
         i = i + 1
+        if ( i > 4*int(aCell/pxReal**2) ) then
+            exit
+        end if
     enddo
     i = i - 1
     com(1) = x / real(i)

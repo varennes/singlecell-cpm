@@ -14,7 +14,8 @@ integer :: run, dt, tMC, telem, elemMax
 
 real(b8) :: prob, r, w, ui, uf
 real(b8) :: CI, CR, vCell(tMCmax)
-real(b8) :: comCell(tMCmax,2), pCell, plrVec(2), globalSignal
+real(b8) :: pCell, plrVec(2), globalSignal
+real(b8) :: comCell(tMCmax,2), deltaCOM(2), comOld(2), comNew(2)
 real(b8), allocatable :: localSignal(:)
 
 integer :: a(4), b(4), rSim(2)
@@ -23,10 +24,10 @@ integer, allocatable :: rCell(:,:), rTmp(:,:), fill(:,:)
 
 character(len=1024) :: filename
 
-allocate( localSignal( 2*int(aCell/pxReal**2)) )
-allocate( rCell( 2*int(aCell/pxReal**2), 2) )
-allocate(  rTmp( 2*int(aCell/pxReal**2), 2) )
-allocate(  fill( 2*int(aCell/pxReal**2), 2) )
+allocate( localSignal( 4*int(aCell/pxReal**2)) )
+allocate( rCell( 4*int(aCell/pxReal**2), 2) )
+allocate(  rTmp( 4*int(aCell/pxReal**2), 2) )
+allocate(  fill( 4*int(aCell/pxReal**2), 2) )
 
 call init_random_seed()
 
@@ -45,23 +46,30 @@ do run = 1, runTotal
     end if
 
     ! cell initialization time: cell shape and size relaxes before start of chemotaxis simulation
+    plrVec = 0.0_b8
+    comOld = 0.0_b8
+    comNew = 0.0_b8
     do i = 1, 4*elemMax
         call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
         if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
             cycle
         end if
         call getItlStep( a, b, rSim, rCell, pxCell, pCell)
-
+        call getCOM( rCell, comNew)
+        deltaCOM = comNew - comOld
+        call getVectorUpdate( plrVec, rCell, pxCell, comNew, deltaCOM, globalSignal, localSignal, rSim)
+        comOld = comNew
     enddo
 
     call getCOM( rCell, comCell(1,:))
 
-    ! call wrtCell( rCell, comCell(1,:), pxCell, 0)
-    plrVec = 0.0_b8
-    write(107,*) plrVec, 0
-    do tMC = 1, tMCmax
+    ! write(107,*) plrVec, 1
+    ! call wrtCell( rCell, comCell(1,:), pxCell, 1)
+
+    do tMC = 2, tMCmax
         call getCOM( rCell, comCell(tMC,:))
-        call getVectorUpdate( plrVec, rCell, pxCell, comCell(tMC,:), globalSignal, localSignal, rSim)
+        deltaCOM = comCell(tMC,:) - comCell(tMC-1,:)
+        call getVectorUpdate( plrVec, rCell, pxCell, comCell(tMC,:), deltaCOM, globalSignal, localSignal, rSim)
         do telem = 1, elemMax
 
             call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
@@ -72,7 +80,7 @@ do run = 1, runTotal
 
         enddo ! end of elementary time-step loop
 
-        ! if ( mod(tMC,1) == 0 ) then
+        ! if ( mod(tMC,10) == 0 ) then
         !     write(107,*) plrVec, tMC
         !     call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
         ! end if
@@ -84,11 +92,11 @@ do run = 1, runTotal
         end if
     enddo ! end of Monte Carlo time-step loop
 
-    dt = 5
+    dt = 3
     call getCellSpeed( tMC-1, dt, comCell, vCell, iv)
     call getChemotaxMetric( tMC-1, comCell, CI, CR)
 
-    call wrtDisplacement( comCell(tMC-1,:), comCell(1,:), tMC-1, run)
+    ! call wrtDisplacement( comCell(tMC-1,:), comCell(1,:), tMC-1, run)
     call wrtChemotaxMetric( CI, CR, run)
     call wrtMeanSpeed( vCell, run, iv)
     ! call wrtInstSpeed( vCell, dt, run, iv)
@@ -105,9 +113,9 @@ close(15)
 close(16)
 close(21)
 
-deallocate( localSignal )
-deallocate( rCell )
-deallocate( rTmp  )
+! deallocate( localSignal )
+! deallocate( rCell )
+! deallocate( rTmp  )
 
 end program
 

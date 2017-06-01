@@ -59,10 +59,10 @@ real(b8) function getProb( uNew, uOld, w)
 end function getProb
 
 
-subroutine getVectorUpdate( plrVec, rCell, pxCell, com, globalSignal, localSignal, rSim)
+subroutine getVectorUpdate( plrVec, rCell, pxCell, com, deltaCOM, globalSignal, localSignal, rSim)
     implicit none
     real(b8), intent(inout) :: plrVec(2), globalSignal, localSignal(:)
-    real(b8), intent(in)    :: com(2)
+    real(b8), intent(in)    :: com(2), deltaCOM(2)
     integer,  intent(in)    :: rCell(:,:), pxCell, rSim(2)
     real(b8) :: conc, norm, q(2)
     integer  :: i, j, k, edgeCheck, edgeTotal, nn(2)
@@ -94,8 +94,7 @@ subroutine getVectorUpdate( plrVec, rCell, pxCell, com, globalSignal, localSigna
     enddo
     ! write(*,*) 'q = ', q, 'edgeTotal =', edgeTotal, ' qnorm =', q / real(edgeTotal)
     q = q / real(edgeTotal)
-    plrVec = plrVec + rVec*( -plrVec + eVec*q)
-    plrVec = (1.0_b8 - rVec)*plrVec + eVec*q
+    plrVec = (1.0_b8 - rVec)*plrVec + rVec*(eVec*q + deltaCOM)
 
 end subroutine getVectorUpdate
 
@@ -108,7 +107,7 @@ subroutine getVectorStep( a, b, rSim, rCell, pxCell, pCell ,plrVec)
     integer,  intent(inout) :: rCell(:,:), pxCell
     real(b8), intent(in)    :: plrVec(2)
     real(b8), intent(inout) :: pCell
-    integer  :: fill( 2*int(aCell/pxReal**2), 2), rTmp( 2*int(aCell/pxReal**2), 2)
+    integer  :: fill( 4*int(aCell/pxReal**2), 2), rTmp( 4*int(aCell/pxReal**2), 2)
     integer  :: nFill, pxTmp
     real(b8) :: prob, r, ui, uf, w
     real(b8) :: dxTmp, comNew(2), comOld(2), vec(2)
@@ -119,18 +118,21 @@ subroutine getVectorStep( a, b, rSim, rCell, pxCell, pCell ,plrVec)
     if ( a(3) == 1 ) then
         ! cell is adding a pixel
         pxTmp = pxCell + 1
-        rTmp(pxTmp,1:2) = b(1:2)
-
-        call getCOM( rTmp, comNew)
-        w = dot_product( comNew-comOld, plrVec)
-        dxTmp = dsqrt( dot_product( comNew-comOld, comNew-comOld) )
-        if ( w /= 0.0 .AND. dxTmp > 1e-10 ) then
-            w = w / dxTmp
+        if ( pxTmp > 4*int(aCell/pxReal**2) ) then
+            ! cell is adding more pixels than allocated
+            prob = 0.0_b8
+        else
+            rTmp(pxTmp,1:2) = b(1:2)
+            call getCOM( rTmp, comNew)
+            w = dot_product( comNew-comOld, plrVec)
+            dxTmp = dsqrt( dot_product( comNew-comOld, comNew-comOld) )
+            if ( w /= 0.0 .AND. dxTmp > 1e-10 ) then
+                w = w / dxTmp
+            end if
+            ui   = getEnergy( rSim, rCell, pxCell, pCell)
+            uf   = getEnergy( rSim, rTmp,  pxTmp, pCell)
+            prob = getProb( uf, ui, w)
         end if
-
-        ui   = getEnergy( rSim, rCell, pxCell, pCell)
-        uf   = getEnergy( rSim, rTmp,  pxTmp, pCell)
-        prob = getProb( uf, ui, w)
     else
         ! cell is removing a pixel
         pxTmp = pxCell - 1
@@ -171,8 +173,7 @@ subroutine getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSig
     integer, intent(in)     :: a(4), b(4), rSim(2)
     integer, intent(inout)  :: rCell(:,:), pxCell
     real(b8), intent(inout) :: globalSignal, localSignal(:), pCell
-
-    integer  :: fill( 2*int(aCell/pxReal**2), 2), rTmp( 2*int(aCell/pxReal**2), 2)
+    integer  :: fill( 4*int(aCell/pxReal**2), 2), rTmp( 4*int(aCell/pxReal**2), 2)
     integer  :: nFill, pxTmp
     real(b8) :: prob, r, ui, uf, w
 
@@ -228,7 +229,7 @@ subroutine getItlStep( a, b, rSim, rCell, pxCell, pCell)
     real(b8), intent(in)    :: pCell
     integer,  intent(in)    :: a(4), b(4), rSim(2)
     integer,  intent(inout) :: rCell(:,:), pxCell
-    integer  :: fill( 2*int(aCell/pxReal**2), 2), rTmp( 2*int(aCell/pxReal**2), 2)
+    integer  :: fill( 4*int(aCell/pxReal**2), 2), rTmp( 4*int(aCell/pxReal**2), 2)
     integer  :: nFill, pxTmp
     real(b8) :: prob, r, ui, uf, w
 

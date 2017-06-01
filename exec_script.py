@@ -61,16 +61,16 @@ if __name__ == '__main__':
     "lfinish", "runTotal", "tMCmax"
     ]
     paramDefault = [
-    0.3, 0.1, 0.01,
-    0.0, 1.0,
-    0.1, 1.0,
-    400, 3,
-    4, 50, 150
+    0.8, 0.5, 0.01,
+    0.0, 0.5,
+    0.5, 0.01,
+    400, 5,
+    9, 50, 200
     ]
     # iterate over psList of parameters with values contained in pvList
     psList = ["tMCmax"]
-    psList = ["eVec"]
-    pvList = [ [2.0, 1.0, 0.5, 0.1, 0.01]]
+    psList = [ "rVec", "eVec"]
+    pvList = [ [0.5, 0.1, 0.05, 0.01], [0.0, 0.01, 0.1]]
 
     # set all paramters to their default values
     for param in paramList:
