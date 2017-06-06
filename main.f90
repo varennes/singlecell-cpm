@@ -80,10 +80,10 @@ do run = 1, runTotal
 
         enddo ! end of elementary time-step loop
 
-        ! if ( mod(tMC,10) == 0 ) then
-        !     write(107,*) plrVec, tMC
-        !     call wrtCell( rCell, comCell(tMC,:), pxCell, tMC)
-        ! end if
+        if ( mod(tMC,3) == 0 ) then
+            ! write(107,*) plrVec, tMC
+            call wrtCell( rCell, comCell(tMC,:), pxCell, tMC, run)
+        end if
 
         ! check if finish line hit
         if ( comCell(tMC,1) > (real(rSim(1))-sqrt(aCell/pxReal**2)) ) then
@@ -112,6 +112,7 @@ close(14)
 close(15)
 close(16)
 close(21)
+close(22)
 
 ! deallocate( localSignal )
 ! deallocate( rCell )

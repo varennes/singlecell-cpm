@@ -17,8 +17,8 @@ real(b8), parameter :: eVec =  0.01_b8
 !!! SIMULATION PARAMETERS
 real(b8), parameter :: pxReal =  3.0_b8
 integer,  parameter :: lfinish =  9
-integer,  parameter :: runTotal = 30
-integer,  parameter :: tMCmax =  500
+integer,  parameter :: runTotal = 3
+integer,  parameter :: tMCmax =  100
 
 real(b8), parameter :: pi = 3.1415927_b8  ! pi
 

@@ -5,18 +5,24 @@ use probability
 
 contains
 
-! outputs x to fort.105
+! outputs cell pixel locations to fort.105
 ! outputs center-of-mass (COM) to fort.106
-subroutine wrtCell( rCell, comCell, pxCell, t)
+subroutine wrtCell( rCell, comCell, pxCell, t, run)
     implicit none
     real(b8), intent(in) :: comCell(2)
-    integer,  intent(in) :: rCell(:,:), pxCell, t
+    integer,  intent(in) :: rCell(:,:), pxCell, t, run
+    character(len=1024)  :: filename
     integer :: i, j
+    write (filename,"(A3,I0.3,A4)") 'com', run, '.dat'
+    open( 22, file=filename)
 
     do i = 1, pxCell
         write(105,*) rCell(i,1), rCell(i,2), t
     enddo
-    write(106,*) comCell(:), t
+    write(22,"(E16.8)", advance="no") comCell(1)
+    write(22,"(E16.8)", advance="no") comCell(2)
+    write(22,"(I7)", advance="no") t
+    write(22,*) ''
 
 end subroutine wrtCell
 
