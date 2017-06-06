@@ -81,8 +81,8 @@ do run = 1, runTotal
         enddo ! end of elementary time-step loop
 
         if ( mod(tMC,3) == 0 ) then
-            ! write(107,*) plrVec, tMC
-            call wrtCell( rCell, comCell(tMC,:), pxCell, tMC, run)
+            ! call wrtCell( rCell, pxCell, tMC)
+            call wrtCOM( comCell(tMC,:), tMC, run)
         end if
 
         ! check if finish line hit
@@ -101,10 +101,12 @@ do run = 1, runTotal
     call wrtMeanSpeed( vCell, run, iv)
     ! call wrtInstSpeed( vCell, dt, run, iv)
 
-    write(*,"(A14)", advance="no") 'complete run #'
-    write(*,"(I5)") run
+    ! write(*,"(A14)", advance="no") 'complete run #'
+    ! write(*,"(I5)") run
 
 enddo
+
+write(*,*) '  SIMULATION COMPLETE'
 
 close(12)
 close(13)
