@@ -1,8 +1,7 @@
 # singlecell-cpm
-Cellular Potts Model (CPM) Simulations of single cell chemotaxis.
+Cellular Potts Model (CPM) simulations of single cell chemotaxis.
 
-<img src="fig/cpm_mov1.gif" style="width: 300px;"/>
-
+<img src="fig/cpm_mov1.gif" style="width: 200px;"/>
 
 
 ## Running singlecell-cpm
@@ -15,7 +14,7 @@ gfortran main.f90 mod*
 rm *.mod
 ./a.out
 ```
-In order to use `exec_script.py` the [GNU Fortran compiler](https://gcc.gnu.org/fortran/) must be installed on your machine. A different compiler can be used if the `compile()` function in `exec_script.py` is appropriately modified.
+In order to compile the code and use `exec_script.py` the [GNU Fortran compiler](https://gcc.gnu.org/fortran/) must be installed on your machine. A different compiler can be used if the `compile()` function in `exec_script.py` is appropriately modified.
 
 `exec_script.py` allows you to run the program for various changing parameters. For each respective parameter and value the output from the program is placed in its designated directory.
 
