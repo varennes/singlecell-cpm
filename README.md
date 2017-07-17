@@ -1,4 +1,7 @@
 # singlecell-cpm
+
+<a href="https://zenodo.org/badge/latestdoi/85717666"><img src="https://zenodo.org/badge/85717666.svg" alt="DOI"></a>
+
 Cellular Potts Model (CPM) simulations of single cell chemotaxis.
 
 <img src="fig/cpm_mov1.gif" style="width: 200px;"/>
