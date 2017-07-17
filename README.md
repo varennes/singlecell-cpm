@@ -6,7 +6,7 @@ Cellular Potts Model (CPM) simulations of single cell chemotaxis.
 
 ## Running singlecell-cpm
 
-The python script `exec_script.py` can compile and run the program for you. You can also compile and run the program manually by compiling module files and main program file in the following manner:
+The python script `exec_script.py` can compile and run the program for you. All relevant simulation parameters can be changed and tested using `exec_script.py`. You can also compile and run the program manually by compiling module files and main program file in the following manner:
 ```
 gfortran -c mod0* mod1* mod2* mod3*
 rm *.o

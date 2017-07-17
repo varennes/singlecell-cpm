@@ -43,13 +43,15 @@ def compile():
     os.system("rm *.mod")
     pass
 
-### List of parameters that can be changed ###
-#
-#  "alpha", "lArea", "lPerim", "w0", "aCell"
-#  "c0", "g"
-#  "pxReal", "lfinish", "runTotal", "tMCmax"
-#
-###
+'''
+List of parameters that can be changed:
+
+"alpha", "lArea", "lPerim"
+"c0", "g"
+"rVec", "eVec"
+"aCell", "pxReal"
+"lfinish", "runTotal", "tMCmax"
+'''
 
 if __name__ == '__main__':
     # all possible parameters and their default values
