@@ -1,6 +1,7 @@
 # Output files
 fort.*
 *.dat
+*.pyc
 
 # Directories
 data/*
