@@ -5,7 +5,7 @@ import moduleEnergy as mE
 def relaxCell( rCell, param):
     lCell = len(rCell)**0.5
     elemTime = int(9*lCell**2)
-    print elemTime
+    print 'Number of initialization time steps: %i' % elemTime
 
     xlist = [-lCell, 2*lCell-1]
     ylist = [-lCell, 2*lCell-1]
@@ -30,7 +30,10 @@ def relaxCell( rCell, param):
             uf = mE.calcEnergy( rTemp, param)
             # get probability of accepting change
             prob = mE.calcProb( ui, uf, 0.0)
-            print 'prob = %s, ui = %s, uf = %s' %(prob,ui,uf)
+            # print 'prob = %s, ui = %s, uf = %s' %(prob,ui,uf)
+            if ( rd.random() < prob):
+                print 'lattice change accepted'
+                rCell = rTemp
 
     return rCell
 
