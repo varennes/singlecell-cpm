@@ -1,4 +1,5 @@
 # contains all parameters
+import math
 
 def getParameters():
     param = dict()
@@ -9,6 +10,7 @@ def getParameters():
     param['w0']     = 1.0
     # cell related parameters
     param['aCell'] = 400.0
+    param['pCell'] = 2.0 * ( math.pi * param['aCell'])**0.5
     param['rVec']  = 0.5
     param['eVec']  = 0.1
     # concentration profile parameters

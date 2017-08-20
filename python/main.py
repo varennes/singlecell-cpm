@@ -2,6 +2,7 @@ import random as rd
 import moduleParam  as m0
 import moduleInit   as m1
 import moduleOutput as m2
+import moduleEnergy as m3
 
 if __name__ == '__main__':
     # get parameters
@@ -14,6 +15,10 @@ if __name__ == '__main__':
         comCell = []
         rCell = m1.initSystem( param)
         comCell.append( m1.calcCOM( rCell))
+
+        # # perimeter test
+        # perimList, perim = m3.calcPerimeter( rCell)
+        # print len(perimList), perim
 
         # test output
         m2.outputCOM( comCell[-1], 0, fnCOM)
