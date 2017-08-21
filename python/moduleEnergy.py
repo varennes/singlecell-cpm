@@ -15,6 +15,17 @@ def calcEnergy( rCell, param):
     return energy
 
 
+def calcWork( comi, comf, plr):
+    work = 0.0
+    deltaCOM = [ comf[0] - comi[0], comf[1] - comi[1]]
+    norm = sum( x*x for x in deltaCOM)
+    if norm > 1e-10:
+        deltaCOM = [ x/norm for x in deltaCOM]
+        work = deltaCOM[0]*plr[0] + deltaCOM[1]*plr[1]
+
+    return work
+
+
 def calcProb( ui, uf, w):
     uDelta = uf - ui
     return math.exp( min( 0.0, w-uDelta ) )

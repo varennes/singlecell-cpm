@@ -2,6 +2,47 @@
 import random as rd
 import moduleEnergy as mE
 
+
+def evolveCell( rCell, com, lCell, param):
+    elemTime = int(9*lCell**2)
+
+    lmin = int(lCell*1.5)
+    lmax = 3*lCell - lmin - 1
+    xlist = [ int(com[0]) - lmin, int(com[0]) + lmax]
+    ylist = [ int(com[1]) - lmin, int(com[1]) + lmax]
+
+    for iRelax in xrange( elemTime):
+        a, b = pickLatticePair( xlist, ylist)
+        a.append( (a in rCell) )
+        b.append( (b in rCell) )
+        # print 'after in check', len(rCell)
+        if a[2] != b[2]:
+            if a[2]:
+                # cell is adding a lattice site
+                rTemp = rCell[:]
+                rTemp.append( b[:2])
+            else:
+                # cell is removing a lattice site
+                rTemp = rCell[:]
+                rTemp.remove( b[:2])
+
+            # calculate change in energy
+            ui = mE.calcEnergy( rCell, param)
+            uf = mE.calcEnergy( rTemp, param)
+            # calculate work
+            plr = [1.0, 0.0]
+            comTemp = calcCOM( rTemp)
+            w  = mE.calcWork( com, comTemp, plr)
+            # get probability of accepting change
+            prob = mE.calcProb( ui, uf, w)
+            # print 'prob = %s, ui = %s, uf = %s' %(prob,ui,uf)
+            if ( rd.random() < prob):
+                # print 'lattice change accepted'
+                rCell = rTemp
+
+    return rCell
+
+
 def relaxCell( rCell, param):
     lCell = len(rCell)**0.5
     elemTime = int(9*lCell**2)
@@ -32,7 +73,7 @@ def relaxCell( rCell, param):
             prob = mE.calcProb( ui, uf, 0.0)
             # print 'prob = %s, ui = %s, uf = %s' %(prob,ui,uf)
             if ( rd.random() < prob):
-                print 'lattice change accepted'
+                # print 'lattice change accepted'
                 rCell = rTemp
 
     return rCell

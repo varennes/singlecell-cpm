@@ -3,7 +3,7 @@ import math
 
 # output cell 'COM' at time-step 't' to file 'filename'
 def outputCOM( com, t, filename):
-    strCOM  = str(com[0]) +  ' ' + str(com[0]) + ' '
+    strCOM  = str(com[0]) +  ' ' + str(com[1]) + ' '
     strCOM += str(t) + '\n'
     with open( filename, 'a') as f:
         f.write(strCOM)

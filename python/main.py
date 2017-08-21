@@ -14,6 +14,7 @@ if __name__ == '__main__':
 
         comCell = []
         rCell = m1.initSystem( param)
+        lCell = len(rCell)**0.5
         comCell.append( m1.calcCOM( rCell))
 
         # # perimeter test
@@ -27,3 +28,8 @@ if __name__ == '__main__':
         rCell = m1.relaxCell( rCell, param)
         comCell.append( m1.calcCOM( rCell))
         m2.outputCOM( comCell[-1], 1, fnCOM)
+
+        # time evoluation of cell
+        rCell = m1.evolveCell( rCell, comCell[-1], lCell, param)
+        comCell.append( m1.calcCOM( rCell))
+        m2.outputCOM( comCell[-1], 2, fnCOM)
