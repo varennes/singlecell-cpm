@@ -20,6 +20,6 @@ def getParameters():
     param['pxReal']   = 5.0
     param['lFinish']  = 9
     param['runTotal'] = 1
-    param['tMCmax']   = 2
+    param['tMCmax']   = 30
 
     return param
