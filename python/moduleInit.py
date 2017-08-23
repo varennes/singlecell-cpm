@@ -11,7 +11,7 @@ def evolveCell( rCell, com, lCell, param):
     xlist = [ int(com[0]) - lmin, int(com[0]) + lmax]
     ylist = [ int(com[1]) - lmin, int(com[1]) + lmax]
 
-    for iRelax in xrange( elemTime):
+    for iElem in xrange( elemTime):
         a, b = pickLatticePair( xlist, ylist)
         a.append( (a in rCell) )
         b.append( (b in rCell) )
@@ -21,24 +21,34 @@ def evolveCell( rCell, com, lCell, param):
                 # cell is adding a lattice site
                 rTemp = rCell[:]
                 rTemp.append( b[:2])
+                # rTemp is simply connected
+                connectedCheck = True
             else:
                 # cell is removing a lattice site
                 rTemp = rCell[:]
                 rTemp.remove( b[:2])
+                # check if rTemp is simply connected
+                floodList = []
+                floodList = floodFill( rCell[0], floodList, rCell)
+                if len(floodList) == len(rCell):
+                    connectedCheck = True
+                else:
+                    connectedCheck = False
 
-            # calculate change in energy
-            ui = mE.calcEnergy( rCell, param)
-            uf = mE.calcEnergy( rTemp, param)
-            # calculate work
-            plr = [1.0, 0.0]
-            comTemp = calcCOM( rTemp)
-            w  = mE.calcWork( com, comTemp, plr)
-            # get probability of accepting change
-            prob = mE.calcProb( ui, uf, w)
-            # print 'prob = %s, ui = %s, uf = %s' %(prob,ui,uf)
-            if ( rd.random() < prob):
-                # print 'lattice change accepted'
-                rCell = rTemp
+            if connectedCheck:
+                # calculate change in energy
+                ui = mE.calcEnergy( rCell, param)
+                uf = mE.calcEnergy( rTemp, param)
+                # calculate work
+                plr = [1.0, 0.0]
+                comTemp = calcCOM( rTemp)
+                w  = mE.calcWork( com, comTemp, plr)
+                # get probability of accepting change
+                prob = mE.calcProb( ui, uf, w)
+                # print 'prob = %s, ui = %s, uf = %s' %(prob,ui,uf)
+                if ( rd.random() < prob):
+                    # print 'lattice change accepted'
+                    rCell = rTemp
 
     return rCell
 
@@ -61,20 +71,30 @@ def relaxCell( rCell, param):
                 # cell is adding a lattice site
                 rTemp = rCell[:]
                 rTemp.append( b[:2])
+                # rTemp is simply connected
+                connectedCheck = True
             else:
                 # cell is removing a lattice site
                 rTemp = rCell[:]
                 rTemp.remove( b[:2])
+                # check if rTemp is simply connected
+                floodList = []
+                floodList = floodFill( rCell[0], floodList, rCell)
+                if len(floodList) == len(rCell):
+                    connectedCheck = True
+                else:
+                    connectedCheck = False
 
-            # calculate change in energy
-            ui = mE.calcEnergy( rCell, param)
-            uf = mE.calcEnergy( rTemp, param)
-            # get probability of accepting change
-            prob = mE.calcProb( ui, uf, 0.0)
-            # print 'prob = %s, ui = %s, uf = %s' %(prob,ui,uf)
-            if ( rd.random() < prob):
-                # print 'lattice change accepted'
-                rCell = rTemp
+            if connectedCheck:
+                # calculate change in energy
+                ui = mE.calcEnergy( rCell, param)
+                uf = mE.calcEnergy( rTemp, param)
+                # get probability of accepting change
+                prob = mE.calcProb( ui, uf, 0.0)
+                # print 'prob = %s, ui = %s, uf = %s' %(prob,ui,uf)
+                if ( rd.random() < prob):
+                    # print 'lattice change accepted'
+                    rCell = rTemp
 
     return rCell
 
@@ -106,6 +126,27 @@ def calcCOM( rCell):
     return com
 
 
+def floodFill( lattice, floodList, rCell):
+    # exit if lattice is already in floodList
+    if lattice in floodList:
+        return floodList
+    # exit if lattice is not in rCell
+    if lattice in rCell:
+        pass
+    else:
+        return floodList
+    # exit if floodList has more lattices than rCell
+    if len(floodList) > len(rCell):
+        return floodList
+
+    floodList.append( lattice)
+    nnMove = [[1,0], [0,1], [-1,0], [0,-1]]
+    for nn in nnMove:
+        newLattice = [ i+j for i,j in zip(lattice, nn)]
+
+    return floodList
+
+
 def pickLatticePair( x, y):
     a = [0,0]
     a[0] = rd.randint( x[0], x[1])
@@ -113,6 +154,6 @@ def pickLatticePair( x, y):
 
     nnMove = [[1,0], [0,1], [-1,0], [0,-1]]
     inn = rd.randint(0,3)
-    b = [ i+j for i,j in a,nnMove[inn]]
+    b = [ i+j for i,j in zip(a,nnMove[inn])]
 
     return a, b
