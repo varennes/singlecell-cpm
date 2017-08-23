@@ -32,8 +32,14 @@ if __name__ == '__main__':
         m2.outputRCELL( rCell, 0, fnRCL)
 
         # time evoluation of cell
+        plr = [ 0.0, 0.0]
         for tMC in xrange( param['tMCmax']):
+            # update cell lattices
             rCell = m1.evolveCell( rCell, comCell[-1], lCell, param)
             comCell.append( m1.calcCOM( rCell))
+            # update polarization vector
+            deltaCOM = [ i-j for i,j in zip( comCell[-1], comCell[-2])]
+            plr = m3.evolvePlr( plr, rCell, com, deltaCOM, perimList, param)
+            # output data
             m2.outputCOM( comCell[-1], tMC+1, fnCOM)
             m2.outputRCELL( rCell, tMC+1, fnRCL)

@@ -1,5 +1,17 @@
-# functions related to energy and work
+# functions related to energy, work, polarization, and chemical concentration
 import math
+import numpy as np
+
+# mean chemical concentration, linear profile
+def cLinear( x, param):
+    return param['c0'] + (param['g'] * x / param['pxReal'])
+
+
+# calculate probability of adding/removing a lattice site
+def calcProb( ui, uf, w):
+    uDelta = uf - ui
+    return math.exp( min( 0.0, w-uDelta ) )
+
 
 def calcEnergy( rCell, param):
     energy = 0.0
@@ -26,9 +38,32 @@ def calcWork( comi, comf, plr):
     return work
 
 
-def calcProb( ui, uf, w):
-    uDelta = uf - ui
-    return math.exp( min( 0.0, w-uDelta ) )
+def evolvePlr( plr, rCell, com, deltaCOM, perimList, param):
+    # calculate local and mean cell chemical concentration signals
+    localSignal, meanSignal = calcSignal( rCell, perimList, param)
+    q = [ 0.0, 0.0]
+    for lattice in rCell:
+        if lattice in perimList:
+            i = perimList.index(lattice)
+            signal = ( localSignal[i] - meanSignal) / meanSignal
+            qtemp  = [ i-j for i,j in zip( float(lattice), com)]
+            norm   = ( qtemp[0]**2 + qtemp[1]**2)**0.5
+            q[0]  += signal * qtemp[0] / norm
+            q[1]  += signal * qtemp[1] / norm
+    q = [ x / float(len(perimList)) for x in q]
+    for i in range(2):
+        plr[i] = (1.0 - param['rVec'])*plr[i] + param['eVec']*q[i] + deltaCOM[i]
+    return plr
+
+
+def calcSignal( rCell, perimList, param):
+    local = []
+    mean  = 0.0
+    for lattice in rCell:
+        c = cLinear( rCell[0], param)
+        local.append( np.random.poisson(c))
+    mean = np.mean( local)
+    return local, mean
 
 
 def calcPerimeter( rCell):
