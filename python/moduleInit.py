@@ -3,7 +3,7 @@ import random as rd
 import moduleEnergy as mE
 
 
-def evolveCell( rCell, com, lCell, param):
+def evolveCell( rCell, com, plr, lCell, param):
     elemTime = int(9*lCell**2)
 
     lmin = int(lCell*1.5)
@@ -40,7 +40,6 @@ def evolveCell( rCell, com, lCell, param):
                 ui = mE.calcEnergy( rCell, param)
                 uf = mE.calcEnergy( rTemp, param)
                 # calculate work
-                plr = [1.0, 0.0]
                 comTemp = calcCOM( rTemp)
                 w  = mE.calcWork( com, comTemp, plr)
                 # get probability of accepting change

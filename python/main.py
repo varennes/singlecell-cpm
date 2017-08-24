@@ -11,6 +11,7 @@ if __name__ == '__main__':
     for iRun in xrange( param['runTotal']):
         # setup output files
         fnCOM = m2.fileSetupCOM( iRun)
+        fnPLR = m2.fileSetupPLR()
         fnRCL = m2.fileSetupRCELL()
 
         comCell = []
@@ -18,28 +19,29 @@ if __name__ == '__main__':
         lCell = len(rCell)**0.5
         comCell.append( m1.calcCOM( rCell))
 
-        # # perimeter test
-        # perimList, perim = m3.calcPerimeter( rCell)
-        # print len(perimList), perim
-
-        # # test output
-        # m2.outputCOM( comCell[-1], 0, fnCOM)
-
-        # relax cell shape and its polarization vector before starting movement tracking
+        # relax cell shape
         rCell = m1.relaxCell( rCell, param)
         comCell.append( m1.calcCOM( rCell))
-        m2.outputCOM( comCell[-1], 0, fnCOM)
+        # initialize polarization vector
+        plr = [ 0.0, 0.0]
+        for i in xrange( int( 5.0 / param['rVec'])):
+            plr = m3.evolvePlr( plr, rCell, comCell[-1], [ 0.0, 0.0], param)
+            # print plr
+
+        # output initial cell state
         m2.outputRCELL( rCell, 0, fnRCL)
+        m2.outputVector( comCell[-1], 0, fnCOM)
+        m2.outputVector( plr, 0, fnPLR)
 
         # time evoluation of cell
-        plr = [ 0.0, 0.0]
         for tMC in xrange( param['tMCmax']):
             # update cell lattices
-            rCell = m1.evolveCell( rCell, comCell[-1], lCell, param)
+            rCell = m1.evolveCell( rCell, comCell[-1], plr, lCell, param)
             comCell.append( m1.calcCOM( rCell))
             # update polarization vector
             deltaCOM = [ i-j for i,j in zip( comCell[-1], comCell[-2])]
-            plr = m3.evolvePlr( plr, rCell, com, deltaCOM, perimList, param)
+            plr = m3.evolvePlr( plr, rCell, comCell[-1], deltaCOM, param)
             # output data
-            m2.outputCOM( comCell[-1], tMC+1, fnCOM)
             m2.outputRCELL( rCell, tMC+1, fnRCL)
+            m2.outputVector( comCell[-1], tMC+1, fnCOM)
+            m2.outputVector( plr, tMC+1, fnPLR)

@@ -12,10 +12,10 @@ def getParameters():
     param['aCell'] = 400.0
     param['pCell'] = 2.0 * ( math.pi * param['aCell'])**0.5
     param['rVec']  = 0.5
-    param['eVec']  = 0.1
+    param['eVec']  = 0.5
     # concentration profile parameters
-    param['c0'] = 0.0
-    param['g']  = 0.5
+    param['c0'] = 1.0
+    param['g']  = 1.0
     # simulation parameters
     param['pxReal']   = 5.0
     param['lFinish']  = 9

@@ -4,7 +4,7 @@ import numpy as np
 
 # mean chemical concentration, linear profile
 def cLinear( x, param):
-    return param['c0'] + (param['g'] * x / param['pxReal'])
+    return param['c0'] + (param['g'] * float(x) / param['pxReal'])
 
 
 # calculate probability of adding/removing a lattice site
@@ -38,15 +38,18 @@ def calcWork( comi, comf, plr):
     return work
 
 
-def evolvePlr( plr, rCell, com, deltaCOM, perimList, param):
+def evolvePlr( plr, rCell, com, deltaCOM, param):
+    # get cell perimeter
+    perimList, perim = calcPerimeter( rCell)
     # calculate local and mean cell chemical concentration signals
     localSignal, meanSignal = calcSignal( rCell, perimList, param)
+    # make polarization vector update
     q = [ 0.0, 0.0]
     for lattice in rCell:
         if lattice in perimList:
             i = perimList.index(lattice)
             signal = ( localSignal[i] - meanSignal) / meanSignal
-            qtemp  = [ i-j for i,j in zip( float(lattice), com)]
+            qtemp  = [ float(i)-j for i,j in zip( lattice, com)]
             norm   = ( qtemp[0]**2 + qtemp[1]**2)**0.5
             q[0]  += signal * qtemp[0] / norm
             q[1]  += signal * qtemp[1] / norm
@@ -60,8 +63,11 @@ def calcSignal( rCell, perimList, param):
     local = []
     mean  = 0.0
     for lattice in rCell:
-        c = cLinear( rCell[0], param)
-        local.append( np.random.poisson(c))
+        c = cLinear( lattice[0], param)
+        if c > 0.0:
+            local.append( np.random.poisson(c))
+        else:
+            local.append( 0.0)
     mean = np.mean( local)
     return local, mean
 
