@@ -12,13 +12,14 @@ real(b8), parameter :: aCell =  400.0_b8
 real(b8), parameter :: c0 =  0.0_b8
 real(b8), parameter :: g =  0.5_b8
 real(b8), parameter :: rVec =  0.5_b8
-real(b8), parameter :: eVec =  0.1_b8
+real(b8), parameter :: eVec =  0.01_b8
+real(b8), parameter :: nVec =  0.01_b8
 
 !!! SIMULATION PARAMETERS
-real(b8), parameter :: pxReal =  5.0_b8
+real(b8), parameter :: pxReal =  3.0_b8
 integer,  parameter :: lfinish =  9
-integer,  parameter :: runTotal =  50
-integer,  parameter :: tMCmax =  200
+integer,  parameter :: runTotal =  1
+integer,  parameter :: tMCmax =  100
 
 real(b8), parameter :: pi = 3.1415927_b8  ! pi
 
