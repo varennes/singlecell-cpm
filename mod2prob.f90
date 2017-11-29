@@ -25,16 +25,16 @@ end function getWorkAdpt1
 
 
 ! evaluate energy of the configuration
-real(b8) function getEnergy( rSim, rCell, pxCell, pCell)
+real(b8) function getEnergy( rCell, pxCell, pCell)
     implicit none
     real(b8), intent(in) :: pCell
-    integer,  intent(in) :: rSim(2), rCell(:,:), pxCell
+    integer,  intent(in) :: rCell(:,:), pxCell
     integer :: nn(2)
     integer :: i, j, perim
     real(b8) :: contact, areaCost, perimCost
 
     ! get cell perimeter for contact energy and perimeter energy
-    call perimCheck( rCell, pxCell, rSim, perim)
+    call perimCheck( rCell, pxCell, perim)
     contact   = alpha  * real(perim)
     perimCost = lPerim * ( real(perim)  - (pCell/pxReal))**2
     ! energy contribution due to area
@@ -59,11 +59,11 @@ real(b8) function getProb( uNew, uOld, w)
 end function getProb
 
 
-subroutine getVectorUpdate( plrVec, rCell, pxCell, com, deltaCOM, globalSignal, localSignal, rSim)
+subroutine getVectorUpdate( plrVec, rCell, pxCell, com, deltaCOM, globalSignal, localSignal)
     implicit none
     real(b8), intent(inout) :: plrVec(2), globalSignal, localSignal(:)
     real(b8), intent(in)    :: com(2), deltaCOM(2)
-    integer,  intent(in)    :: rCell(:,:), pxCell, rSim(2)
+    integer,  intent(in)    :: rCell(:,:), pxCell
     real(b8) :: conc, norm, q(2)
     integer  :: i, j, k, edgeCheck, edgeTotal, nn(2)
 
@@ -76,7 +76,7 @@ subroutine getVectorUpdate( plrVec, rCell, pxCell, com, deltaCOM, globalSignal, 
         edgeCheck = 4
         ! check neighbors of all cell pixels
         do j = 1, 4
-            call nnGet( j, rCell(i,1:2), rSim, nn)
+            call nnGet( j, rCell(i,1:2), nn)
             do k = 1, pxCell
                 if ( nn(1) == rCell(k,1) .AND. nn(2) == rCell(k,2) ) then
                     edgeCheck = edgeCheck - 1
@@ -87,9 +87,21 @@ subroutine getVectorUpdate( plrVec, rCell, pxCell, com, deltaCOM, globalSignal, 
             edgeTotal = edgeTotal + 1
             conc = (localSignal(i) - globalSignal) / globalSignal
             norm = dsqrt( dot_product( real(rCell(i,:))-com, real(rCell(i,:))-com))
-            do j = 1, 2
-                q(j) = q(j) + conc * (real(rCell(i,j))-com(j)) / norm
-            enddo
+            if ( norm > 1E-10 ) then
+                do j = 1, 2
+                    q(j) = q(j) + conc * (real(rCell(i,j))-com(j)) / norm
+                enddo
+            end if
+
+            ! if ( ISNAN( q(1)) .OR. ISNAN(q(2)) ) then
+            !     write(*,*)
+            !     write(*,*) 'NaN! ', 'gSig =', globalSignal, 'lSig =', localSignal(i)
+            !     write(*,*) 'norm =', norm, 'qi =', real(rCell(i,:))-com(:)
+            !     write(*,*) 'pxCell =', pxCell, 'q =', q(:)
+            !     write(*,*)
+            !     stop
+            ! end if
+
         end if
     enddo
     ! write(*,*) 'q = ', q, 'edgeTotal =', edgeTotal, ' qnorm =', q / real(edgeTotal)
@@ -101,9 +113,9 @@ end subroutine getVectorUpdate
 
 ! subroutine of all the steps neccasary for one elementary time-step
 ! Cell has fixed polarity vector which will determine the work
-subroutine getVectorStep( a, b, rSim, rCell, pxCell, pCell ,plrVec)
+subroutine getVectorStep( a, b, rCell, pxCell, pCell ,plrVec)
     implicit none
-    integer,  intent(in)    :: a(4), b(4), rSim(2)
+    integer,  intent(in)    :: a(4), b(4)
     integer,  intent(inout) :: rCell(:,:), pxCell
     real(b8), intent(in)    :: plrVec(2)
     real(b8), intent(inout) :: pCell
@@ -129,8 +141,8 @@ subroutine getVectorStep( a, b, rSim, rCell, pxCell, pCell ,plrVec)
             if ( w /= 0.0 .AND. dxTmp > 1e-10 ) then
                 w = w / dxTmp
             end if
-            ui   = getEnergy( rSim, rCell, pxCell, pCell)
-            uf   = getEnergy( rSim, rTmp,  pxTmp, pCell)
+            ui   = getEnergy( rCell, pxCell, pCell)
+            uf   = getEnergy( rTmp,  pxTmp,  pCell)
             prob = getProb( uf, ui, w)
         end if
     else
@@ -138,7 +150,7 @@ subroutine getVectorStep( a, b, rSim, rCell, pxCell, pCell ,plrVec)
         pxTmp = pxCell - 1
         call delpxCell( rTmp, pxTmp+1, b(1:2))
         ! check if cell pixels are simply connected
-        call floodFill( rTmp(1,1:2), fill, rSim, rTmp(:,:))
+        call floodFill( rTmp(1,1:2), fill, rTmp(:,:))
         call occupyCount( nFill, fill )
         if ( nFill /= pxTmp .OR. pxTmp == 0 ) then
             ! cell is not simply connected
@@ -152,8 +164,8 @@ subroutine getVectorStep( a, b, rSim, rCell, pxCell, pCell ,plrVec)
                 w = w / dxTmp
             end if
 
-            ui   = getEnergy( rSim, rCell, pxCell, pCell)
-            uf   = getEnergy( rSim, rTmp,  pxTmp, pCell)
+            ui   = getEnergy( rCell, pxCell, pCell)
+            uf   = getEnergy( rTmp,  pxTmp,  pCell)
             prob = getProb( uf, ui, w)
         end if
     end if
@@ -168,9 +180,9 @@ end subroutine getVectorStep
 
 
 ! subroutine of all the steps neccasary for one elementary time-step
-subroutine getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSignal)
+subroutine getElemStep( a, b, rCell, pxCell, pCell, globalSignal, localSignal)
     implicit none
-    integer, intent(in)     :: a(4), b(4), rSim(2)
+    integer, intent(in)     :: a(4), b(4)
     integer, intent(inout)  :: rCell(:,:), pxCell
     real(b8), intent(inout) :: globalSignal, localSignal(:), pCell
     integer  :: fill( 4*int(aCell/pxReal**2), 2), rTmp( 4*int(aCell/pxReal**2), 2)
@@ -190,15 +202,15 @@ subroutine getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSig
         w = getWork( globalSignal, localSignal(a(4)), a(3))
         ! w = getWorkAdpt1( globalSignal, localSignal(a(4)), a(3))
 
-        ui   = getEnergy( rSim, rCell, pxCell, pCell)
-        uf   = getEnergy( rSim, rTmp,  pxTmp, pCell)
+        ui   = getEnergy( rCell, pxCell, pCell)
+        uf   = getEnergy( rTmp,  pxTmp,  pCell)
         prob = getProb( uf, ui, w)
     else
         ! cell is removing a pixel
         pxTmp = pxCell - 1
         call delpxCell( rTmp, pxTmp+1, b(1:2))
         ! check if cell pixels are simply connected
-        call floodFill( rTmp(1,1:2), fill, rSim, rTmp(:,:))
+        call floodFill( rTmp(1,1:2), fill, rTmp(:,:))
         call occupyCount( nFill, fill )
         if ( nFill /= pxTmp .OR. pxTmp == 0 ) then
             ! cell is not simply connected
@@ -208,8 +220,8 @@ subroutine getElemStep( a, b, rSim, rCell, pxCell, pCell, globalSignal, localSig
             w = getWork( globalSignal, localSignal(b(4)), a(3))
             ! w = getWorkAdpt1( globalSignal, localSignal(b(4)), a(3))
 
-            ui   = getEnergy( rSim, rCell, pxCell, pCell)
-            uf   = getEnergy( rSim, rTmp,  pxTmp, pCell)
+            ui   = getEnergy( rCell, pxCell, pCell)
+            uf   = getEnergy( rTmp,  pxTmp,  pCell)
             prob = getProb( uf, ui, w)
         end if
     end if
@@ -224,10 +236,10 @@ end subroutine getElemStep
 
 
 ! subroutine of all the steps neccasary for one elementary initialization time-step
-subroutine getItlStep( a, b, rSim, rCell, pxCell, pCell)
+subroutine getItlStep( a, b, rCell, pxCell, pCell)
     implicit none
     real(b8), intent(in)    :: pCell
-    integer,  intent(in)    :: a(4), b(4), rSim(2)
+    integer,  intent(in)    :: a(4), b(4)
     integer,  intent(inout) :: rCell(:,:), pxCell
     integer  :: fill( 4*int(aCell/pxReal**2), 2), rTmp( 4*int(aCell/pxReal**2), 2)
     integer  :: nFill, pxTmp
@@ -242,15 +254,15 @@ subroutine getItlStep( a, b, rSim, rCell, pxCell, pCell)
         rTmp(pxTmp,1:2) = b(1:2)
 
         w  = 0.0_b8
-        ui = getEnergy( rSim, rCell, pxCell, pCell)
-        uf = getEnergy( rSim, rTmp,  pxTmp, pCell)
+        ui = getEnergy( rCell, pxCell, pCell)
+        uf = getEnergy( rTmp,  pxTmp,  pCell)
         prob = getProb( uf, ui, w)
     else
         ! cell is removing a pixel
         pxTmp = pxCell - 1
         call delpxCell( rTmp, pxTmp+1, b(1:2))
         ! check if cell pixels are simply connected
-        call floodFill( rTmp(1,1:2), fill, rSim, rTmp(:,:))
+        call floodFill( rTmp(1,1:2), fill, rTmp(:,:))
         call occupyCount( nFill, fill )
         if ( nFill /= pxTmp .OR. pxTmp == 0 ) then
             ! cell is not simply connected
@@ -258,8 +270,8 @@ subroutine getItlStep( a, b, rSim, rCell, pxCell, pCell)
             prob = 0.0_b8
         else
             w  = 0.0_b8
-            ui = getEnergy( rSim, rCell, pxCell, pCell)
-            uf = getEnergy( rSim, rTmp,  pxTmp, pCell)
+            ui = getEnergy( rCell, pxCell, pCell)
+            uf = getEnergy( rTmp,  pxTmp,  pCell)
             prob = getProb( uf, ui, w)
         end if
     end if
@@ -277,10 +289,10 @@ end subroutine getItlStep
 
 
 ! count number of pixels neighboring ECM
-subroutine perimCheck( rCell, pxCell, rSim, perim)
+subroutine perimCheck( rCell, pxCell, perim)
     ! lCell = lattice site from cell list
     implicit none
-    integer, intent(in)  :: rCell(:,:), pxCell, rSim(2)
+    integer, intent(in)  :: rCell(:,:), pxCell
     integer, intent(out) :: perim
     integer :: i, j, k, ecmCheck, nn(2)
 
@@ -288,7 +300,7 @@ subroutine perimCheck( rCell, pxCell, rSim, perim)
     do i = 1, pxCell
         ! check neighbors of all cell pixels
         do j = 1, 4
-            call nnGet( j, rCell(i,1:2), rSim, nn)
+            call nnGet( j, rCell(i,1:2), nn)
             ecmCheck = 1
             do k = 1, pxCell
                 if ( nn(1) == rCell(k,1) .AND. nn(2) == rCell(k,2) ) then

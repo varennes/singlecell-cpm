@@ -113,14 +113,29 @@ subroutine wrtMeanSpeed( vCell, run, iv)
 end subroutine wrtMeanSpeed
 
 
-! write out cell aread and perimeter in simulation units
-subroutine wrtAspectRatio( pxCell, rCell, rSim, run)
+subroutine wrtPlrVec( plrVec, t, run)
     implicit none
-    integer, intent(in)  :: rCell(:,:), pxCell, rSim(2), run
+    real(b8), intent(in) :: plrVec(2)
+    integer,  intent(in) :: t, run
+    character(len=1024)  :: filename
+    write (filename,"(A3,I0.3,A4)") 'plr', run, '.dat'
+    open( 33, file=filename)
+
+    write(33,"(E16.8)", advance="no") plrVec(1)
+    write(33,"(E16.8)", advance="no") plrVec(2)
+    write(33,"(I7)", advance="no") t
+    write(33,*) ''
+end subroutine wrtPlrVec
+
+
+! write out cell aread and perimeter in simulation units
+subroutine wrtAspectRatio( pxCell, rCell, run)
+    implicit none
+    integer, intent(in)  :: rCell(:,:), pxCell, run
     integer :: perim
     character(len=1024) :: filename
 
-    call perimCheck( rCell, pxCell, rSim, perim)
+    call perimCheck( rCell, pxCell, perim)
 
     write (filename,"(A10)") 'aspect.dat'
     open( 16, file=filename)

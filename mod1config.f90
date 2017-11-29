@@ -8,7 +8,7 @@ contains
 subroutine initSystem( rCell, rSim, elemMax, pxCell, pCell)
     implicit none
     real(b8), intent(out) :: pCell
-    integer,  intent(out) :: rCell(:,:), rSim(2), elemMax, pxCell
+    integer,  intent(out) :: rCell(:,:), rSim(2,2), elemMax, pxCell
     integer  :: i, j, k, lCell, lx, ly
 
     ! calculate cell length in terms of simulation lattices
@@ -16,24 +16,26 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell, pCell)
     if ( lCell == 0 ) then
         lCell = 1
     end if
-    ! set up simulation lattice size
-    lx = 4 + lfinish       ! x size in terms of cell lengths
-    ly = 5                 ! y size in terms of cell lengths
-    rSim(1) = lx * lCell
-    rSim(2) = ly * lCell
 
     ! set initial cell location. Start 1 cell radius above x and y boundaries.
     k = 0
     do i = 1, lCell
         do j = 1, lCell
             k = k + 1
-            rCell(k,1) = i + lCell
-            rCell(k,2) = j + ( rSim(2) - lCell) / 2
+            rCell(k,1) = i
+            rCell(k,2) = j
         enddo
     enddo
     pCell = 2.0_b8 * dsqrt( pi * aCell)
-    elemMax = rSim(1) * rSim(2)
     pxCell  = k
+
+    ! set up rSim
+    do i = 1, 2
+        rSim(i,1) = minval( rCell(1:pxCell,i)) - 1
+        rSim(i,2) = maxval( rCell(1:pxCell,i)) + 1
+    enddo
+    ! set up elemMax
+    elemMax = (rSim(1,2) - rSim(1,1) + 1) * (rSim(2,2) - rSim(2,1) + 1)
 
 end subroutine initSystem
 
@@ -68,7 +70,7 @@ subroutine getChemotaxMetric( tf, comCell, CI, CR)
     integer,  intent(in)  :: tf
     real(b8), intent(in)  :: comCell(:,:)
     real(b8), intent(out) :: CI, CR
-    real(b8) :: displacement, distance
+    real(b8) :: displacement, distance, r
     integer  :: t
 
     displacement = dsqrt( (comCell(tf,1) - comCell(1,1))**2 + (comCell(tf,2) - comCell(1,2))**2 )
@@ -76,7 +78,13 @@ subroutine getChemotaxMetric( tf, comCell, CI, CR)
     do t = 2, tf
         distance = distance + dsqrt( (comCell(t,1) - comCell(t-1,1))**2 + (comCell(t,2) - comCell(t-1,2))**2 )
     enddo
-    CI = (comCell(tf,1) - comCell(1,1)) / displacement
+
+    if ( displacement > 1E-10  ) then
+        CI = (comCell(tf,1) - comCell(1,1)) / displacement
+    else
+        call random_number(r)
+        CI = -1.0 + 2.0*r
+    end if
     CR = displacement / distance
 end subroutine getChemotaxMetric
 
@@ -104,7 +112,7 @@ end subroutine getCellSpeed
 subroutine pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
     implicit none
     integer, intent(out) :: a(4), b(4)
-    integer, intent(in)  :: rSim(2), rCell(:,:), pxCell, elemMax
+    integer, intent(in)  :: rSim(2,2), rCell(:,:), pxCell, elemMax
     integer  :: i
     real(b8) :: r
 
@@ -112,7 +120,7 @@ subroutine pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
     a(:) = 0
     do i = 1, 2
         call random_number(r)
-        a(i) = 1 + floor( real(rSim(i))*r )
+        a(i) = rSim(i,1) + floor( real(rSim(i,2)-rSim(i,1)+1)*r )
     enddo
     do i = 1, pxCell
         if ( a(1) == rCell(i,1) .AND. a(2) == rCell(i,2) ) then
@@ -126,18 +134,14 @@ subroutine pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
     b(:) = 0
     call random_number(r)
     i = 1 + floor(4.0*r)
-    call nnGet( i, a, rSim, b)
-    if ( b(1) == 0 .OR. b(2) == 0 ) then
-        b(3) = 0
-    else
-        do i = 1, pxCell
-            if ( b(1) == rCell(i,1) .AND. b(2) == rCell(i,2) ) then
-                b(3) = 1
-                b(4) = i
-                exit
-            end if
-        enddo
-    end if
+    call nnGet( i, a(1:2), b(1:2))
+    do i = 1, pxCell
+        if ( b(1) == rCell(i,1) .AND. b(2) == rCell(i,2) ) then
+            b(3) = 1
+            b(4) = i
+            exit
+        end if
+    enddo
 
 end subroutine pickLatticePair
 
@@ -164,18 +168,17 @@ end subroutine delpxCell
 
 
 ! Output coordinates of the nearest neighbor (nn)
-subroutine nnGet( i, x, rSim, nn)
+subroutine nnGet( i, x, nn)
     ! i indicates the nn we are interested in
     ! i = 1 -- nn up
     ! i = 2 -- nn right
     ! i = 3 -- nn down
     ! i = 4 -- nn left
     ! nn = array of nearest neighbor coordinates
-    ! rSim = dimensions of simulation space
     ! x = coordinates of point
     implicit none
     integer, intent(in) :: i
-    integer, dimension(2), intent(in)  :: rSim, x
+    integer, dimension(2), intent(in)  :: x
     integer, dimension(2), intent(out) :: nn
 
     if( i == 1 )then
@@ -190,12 +193,6 @@ subroutine nnGet( i, x, rSim, nn)
     elseif( i == 4 )then
         nn(1) = x(1)
         nn(2) = x(2) - 1
-    endif
-
-    if( nn(1) > (rSim(1) + 2) .OR. nn(1) < 1 )then
-        nn = [ 0, 0]
-    elseif( nn(2) > (rSim(2) + 2) .OR. nn(2) < 1 )then
-        nn = [ 0, 0]
     endif
 
 end subroutine nnGet
@@ -219,13 +216,13 @@ end subroutine occupyCount
 
 
 ! Checks whether a cell is simply connected or not using flood fill algorithm
-recursive subroutine floodFill( node, filled, rSim, xcell)
+recursive subroutine floodFill( node, filled, xcell)
     ! L = number of lattice sites along one dimension
     ! node = array of lattice site coordinates of node
     ! filled = array of all lattice sites that have been filled by the algorithm
     ! xcell =  array of lattice sites occupied by cell x(i,:,:)
     implicit none
-    integer, dimension(2), intent(in) :: node, rSim
+    integer, dimension(2), intent(in) :: node
     integer, dimension(:,:), intent(inout) :: filled
     integer, dimension(:,:), intent(in) :: xcell
     integer, dimension(2) :: nn
@@ -257,17 +254,17 @@ recursive subroutine floodFill( node, filled, rSim, xcell)
 
     filled( nf, :) = node
 
-    call nnGet( 1, node, rSim, nn)
-    call floodFill( nn, filled, rSim, xcell)
+    call nnGet( 1, node, nn)
+    call floodFill( nn, filled, xcell)
 
-    call nnGet( 2, node, rSim, nn)
-    call floodFill( nn, filled, rSim, xcell)
+    call nnGet( 2, node, nn)
+    call floodFill( nn, filled, xcell)
 
-    call nnGet( 3, node, rSim, nn)
-    call floodFill( nn, filled, rSim, xcell)
+    call nnGet( 3, node, nn)
+    call floodFill( nn, filled, xcell)
 
-    call nnGet( 4, node, rSim, nn)
-    call floodFill( nn, filled, rSim, xcell)
+    call nnGet( 4, node, nn)
+    call floodFill( nn, filled, xcell)
 
 end subroutine floodFill
 

@@ -18,7 +18,7 @@ real(b8) :: pCell, plrVec(2), globalSignal
 real(b8) :: comCell(tMCmax,2), deltaCOM(2), comOld(2), comNew(2)
 real(b8), allocatable :: localSignal(:)
 
-integer :: a(4), b(4), rSim(2)
+integer :: a(4), b(4), rSim(2,2)
 integer :: pxCell, pxTmp
 integer, allocatable :: rCell(:,:), rTmp(:,:), fill(:,:)
 
@@ -37,7 +37,8 @@ do run = 1, runTotal
     call initSystem( rCell, rSim, elemMax, pxCell, pCell)
 
     if ( run == 1 ) then
-        write(*,*) ' rSim = ', rSim(:)
+        write(*,*) ' rSim(1) = ', rSim(1,:)
+        write(*,*) ' rSim(2) = ', rSim(2,:)
         write(*,*) ' cell x:', rCell(1,1), rCell(pxCell,1)
         write(*,*) ' cell y:', rCell(1,2), rCell(pxCell,2)
         write(*,*) ' pxCell:   ',   pxCell, '| elemMax =', elemMax
@@ -49,49 +50,62 @@ do run = 1, runTotal
     plrVec = 0.0_b8
     comOld = 0.0_b8
     comNew = 0.0_b8
-    do i = 1, 4*elemMax
-        call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
-        if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
-            cycle
-        end if
-        call getItlStep( a, b, rSim, rCell, pxCell, pCell)
-        call getCOM( rCell, comNew)
-        deltaCOM = comNew - comOld
-        call getVectorUpdate( plrVec, rCell, pxCell, comNew, deltaCOM, globalSignal, localSignal, rSim)
+    do i = 1, 10
+        ! update elemMax
+        do k = 1, 2
+            rSim(k,1) = minval( rCell(1:pxCell,k)) - 1
+            rSim(k,2) = maxval( rCell(1:pxCell,k)) + 1
+        enddo
+        elemMax = (rSim(1,2) - rSim(1,1) + 1) * (rSim(2,2) - rSim(2,1) + 1)
+
+        do j = 1, elemMax
+            call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
+            if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
+                cycle
+            end if
+            call getItlStep( a, b, rCell, pxCell, pCell)
+            call getCOM( rCell, comNew)
+            deltaCOM = comNew - comOld
+        enddo
+        ! call getVectorUpdate( plrVec, rCell, pxCell, comNew, deltaCOM, globalSignal, localSignal)
         comOld = comNew
     enddo
 
     call getCOM( rCell, comCell(1,:))
 
-    ! write(107,*) plrVec, 1
     ! call wrtCell( rCell, pxCell, 1)
     call wrtCOM( comCell(1,:), 1, run)
+    ! call wrtPlrVec( plrVec, 1, run)
 
     do tMC = 2, tMCmax
+        ! update location of COM and change in COM
         call getCOM( rCell, comCell(tMC,:))
         deltaCOM = comCell(tMC,:) - comCell(tMC-1,:)
-        call getVectorUpdate( plrVec, rCell, pxCell, comCell(tMC,:), deltaCOM, globalSignal, localSignal, rSim)
-        do telem = 1, elemMax
 
+        ! update polarization vector
+        call getVectorUpdate( plrVec, rCell, pxCell, comCell(tMC,:), deltaCOM, globalSignal, localSignal)
+
+        ! update elemMax
+        do i = 1, 2
+            rSim(i,1) = minval( rCell(1:pxCell,i)) - 1
+            rSim(i,2) = maxval( rCell(1:pxCell,i)) + 1
+        enddo
+        elemMax = (rSim(1,2) - rSim(1,1) + 1) * (rSim(2,2) - rSim(2,1) + 1)
+
+        do telem = 1, elemMax
             call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
-            if ( a(3) == b(3) .OR. a(1) == 0 .OR. a(2) == 0 .OR. b(1) == 0 .OR. b(2) == 0 ) then
+            if ( a(3) == b(3) ) then
                 cycle
             end if
-            call getVectorStep( a, b, rSim, rCell, pxCell, pCell, plrVec)
-
+            call getVectorStep( a, b, rCell, pxCell, pCell, plrVec)
         enddo ! end of elementary time-step loop
 
-        if ( mod(tMC,3) == 0 ) then
-            ! write(107,*) plrVec, tMC
+        if ( mod(tMC,11) == 0 ) then
             ! call wrtCell( rCell, pxCell, tMC)
             call wrtCOM( comCell(tMC,:), tMC, run)
+            ! call wrtPlrVec( plrVec, tMC, run)
         end if
 
-        ! check if finish line hit
-        if ( comCell(tMC,1) > (real(rSim(1))-sqrt(aCell/pxReal**2)) ) then
-            write(*,*) '  finish line hit'
-            exit
-        end if
     enddo ! end of Monte Carlo time-step loop
 
     dt = 3
@@ -103,8 +117,8 @@ do run = 1, runTotal
     call wrtMeanSpeed( vCell, run, iv)
     ! call wrtInstSpeed( vCell, dt, run, iv)
 
-    ! write(*,"(A14)", advance="no") 'complete run #'
-    ! write(*,"(I5)") run
+    write(*,"(A14)", advance="no") 'complete run #'
+    write(*,"(I5)") run
 
 enddo
 
