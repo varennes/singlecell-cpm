@@ -65,7 +65,7 @@ do run = 1, runTotal
 
     ! write(107,*) plrVec, 1
     ! call wrtCell( rCell, pxCell, 1)
-    call wrtCOM( comCell(1,:), 1, run)
+    ! call wrtCOM( comCell(1,:), 1, run)
 
     do tMC = 2, tMCmax
         call getCOM( rCell, comCell(tMC,:))
@@ -81,11 +81,11 @@ do run = 1, runTotal
 
         enddo ! end of elementary time-step loop
 
-        if ( mod(tMC,3) == 0 ) then
-            ! write(107,*) plrVec, tMC
-            ! call wrtCell( rCell, pxCell, tMC)
-            call wrtCOM( comCell(tMC,:), tMC, run)
-        end if
+        ! if ( mod(tMC,3) == 0 ) then
+        !     ! write(107,*) plrVec, tMC
+        !     ! call wrtCell( rCell, pxCell, tMC)
+        !     call wrtCOM( comCell(tMC,:), tMC, run)
+        ! end if
 
         ! check if finish line hit
         if ( comCell(tMC,1) > (real(rSim(1))-sqrt(aCell/pxReal**2)) ) then

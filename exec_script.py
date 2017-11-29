@@ -14,7 +14,7 @@ def replaceParam( param, newValue):
     "aCell", "pxReal",
     "lfinish", "runTotal", "tMCmax"
     ]
-    if paramList.index(param) > 7:
+    if paramList.index(param) > 8:
         sOld = "integer,  parameter :: " + param
         sNew = sOld
         sNew += " =  " + str(int(newValue)) + "\n"
@@ -64,15 +64,17 @@ if __name__ == '__main__':
     ]
     paramDefault = [
     0.8, 0.5, 0.01,
-    0.0, 0.5,
+    00.0, 0.05,
     0.5, 0.01,
-    400, 5,
+    400, 2.0,
     9, 50, 200
     ]
     # iterate over psList of parameters with values contained in pvList
-    psList = ["tMCmax"]
-    psList = [ "rVec", "eVec"]
-    pvList = [ [0.5, 0.1, 0.05, 0.01], [0.0, 0.01, 0.1]]
+    psList = ["runTotal"]
+    pvList = [ [1]]
+
+    # psList = [ "rVec", "eVec"]
+    # pvList = [ [0.5, 0.1, 0.05, 0.01], [0.0, 0.01, 0.1]]
 
     # set all paramters to their default values
     for param in paramList:
