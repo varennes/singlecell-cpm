@@ -18,7 +18,7 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell, pCell)
     end if
     ! set up simulation lattice size
     lx = 4 + lfinish       ! x size in terms of cell lengths
-    ly = 5                 ! y size in terms of cell lengths
+    ly = 7                 ! y size in terms of cell lengths
     rSim(1) = lx * lCell
     rSim(2) = ly * lCell
 
@@ -27,7 +27,7 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell, pCell)
     do i = 1, lCell
         do j = 1, lCell
             k = k + 1
-            rCell(k,1) = i + lCell
+            rCell(k,1) = i + 2*lCell
             rCell(k,2) = j + ( rSim(2) - lCell) / 2
         enddo
     enddo

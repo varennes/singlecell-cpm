@@ -63,11 +63,11 @@ if __name__ == '__main__':
     "lfinish", "runTotal", "tMCmax"
     ]
     paramDefault = [
-    0.8, 0.5, 0.01,
-    00.0, 0.05,
-    0.5, 0.01,
-    400, 2.0,
-    9, 50, 200
+    0.7, 0.3, 0.01,
+    2.5, 0.05,
+    0.1, 0.8,
+    400, 5.0,
+    9, 100, 100
     ]
     # iterate over psList of parameters with values contained in pvList
     psList = ["runTotal"]
