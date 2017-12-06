@@ -22,7 +22,8 @@ subroutine getSignal( rCell, pxCell, globalSignal, localSignal)
     real(b8)  :: latticeHeight, latticeVolume, conversion
     integer   :: i
 
-    latticeHeight = 0.10_b8 ! set cell height in units of microns
+    ! latticeHeight = 0.10_b8 ! set cell height in units of microns
+    latticeHeight = pxReal  ! set cell height in units of microns
     latticeVolume = latticeHeight * pxReal**2
     conversion    = 0.6022_b8 ! convert nanoMolars (nM) to per cubic micron (micron^-3)
 
@@ -32,7 +33,7 @@ subroutine getSignal( rCell, pxCell, globalSignal, localSignal)
         x = real(rCell(i,1))
         c = cLin(x) * conversion * latticeVolume
         ! sample local signal from a distribution
-        if( c < 100.0 )then
+        if( c < 1000.0 )then
             call poissonrand( c, localSignal(i))
         else
             localSignal(i) = normal( c, sqrt(c))

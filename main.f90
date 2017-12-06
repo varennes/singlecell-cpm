@@ -60,6 +60,7 @@ do run = 1, runTotal
         call getVectorUpdate( plrVec, rCell, pxCell, comNew, deltaCOM, globalSignal, localSignal, rSim)
         comOld = comNew
     enddo
+    ! plrVec = 0.0_b8
 
     call getCOM( rCell, comCell(1,:))
 
@@ -83,7 +84,7 @@ do run = 1, runTotal
 
         ! if ( mod(tMC,3) == 0 ) then
         !     ! write(107,*) plrVec, tMC
-        !     ! call wrtCell( rCell, pxCell, tMC)
+        !     call wrtCell( rCell, pxCell, tMC)
         !     call wrtCOM( comCell(tMC,:), tMC, run)
         ! end if
 
@@ -94,7 +95,7 @@ do run = 1, runTotal
         end if
     enddo ! end of Monte Carlo time-step loop
 
-    dt = 3
+    dt = 10
     call getCellSpeed( tMC-1, dt, comCell, vCell, iv)
     call getChemotaxMetric( tMC-1, comCell, CI, CR)
 
@@ -103,8 +104,8 @@ do run = 1, runTotal
     call wrtMeanSpeed( vCell, run, iv)
     ! call wrtInstSpeed( vCell, dt, run, iv)
 
-    ! write(*,"(A14)", advance="no") 'complete run #'
-    ! write(*,"(I5)") run
+    write(*,"(A14)", advance="no") 'complete run #'
+    write(*,"(I5)") run
 
 enddo
 
