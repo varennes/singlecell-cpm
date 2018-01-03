@@ -95,9 +95,9 @@ do run = 1, runTotal
         end if
     enddo ! end of Monte Carlo time-step loop
 
-    dt = 10
+    dt = 5
     call getCellSpeed( tMC-1, dt, comCell, vCell, iv)
-    call getChemotaxMetric( tMC-1, comCell, CI, CR)
+    call getChemotaxMetric( tMC-1, dt, comCell, CI, CR)
 
     ! call wrtDisplacement( comCell(tMC-1,:), comCell(1,:), tMC-1, run)
     call wrtChemotaxMetric( CI, CR, run)

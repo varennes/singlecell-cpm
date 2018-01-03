@@ -4,20 +4,20 @@ module parameters
 integer,  parameter :: b8 = selected_real_kind(14)
 
 !!! REAL UNIT PARAMETERS !!!
-real(b8), parameter :: alpha =  0.7_b8
-real(b8), parameter :: lArea =  0.5_b8
-real(b8), parameter :: lPerim =  0.01_b8
+real(b8), parameter :: alpha =  3.0_b8
+real(b8), parameter :: lArea =  0.3_b8
+real(b8), parameter :: lPerim =  0.05_b8
 real(b8), parameter :: w0 =  1.0_b8
 real(b8), parameter :: aCell =  400.0_b8
 real(b8), parameter :: c0 =  2.5_b8
 real(b8), parameter :: g =  0.005_b8
 real(b8), parameter :: rVec =  0.1_b8
-real(b8), parameter :: eVec =  0.8_b8
+real(b8), parameter :: eVec =  0.5_b8
 
 !!! SIMULATION PARAMETERS
 real(b8), parameter :: pxReal =  5.0_b8
 integer,  parameter :: lfinish =  9
-integer,  parameter :: runTotal =  300
+integer,  parameter :: runTotal =  100
 integer,  parameter :: tMCmax =  100
 
 real(b8), parameter :: pi = 3.1415927_b8  ! pi

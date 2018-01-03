@@ -63,9 +63,9 @@ subroutine getCOM( rCell, com)
 end subroutine getCOM
 
 
-subroutine getChemotaxMetric( tf, comCell, CI, CR)
+subroutine getChemotaxMetric( tf, dt, comCell, CI, CR)
     implicit none
-    integer,  intent(in)  :: tf
+    integer,  intent(in)  :: tf, dt
     real(b8), intent(in)  :: comCell(:,:)
     real(b8), intent(out) :: CI, CR
     real(b8) :: displacement, distance
@@ -73,11 +73,21 @@ subroutine getChemotaxMetric( tf, comCell, CI, CR)
 
     displacement = dsqrt( (comCell(tf,1) - comCell(1,1))**2 + (comCell(tf,2) - comCell(1,2))**2 )
     distance = 0.0_b8
-    do t = 2, tf
-        distance = distance + dsqrt( (comCell(t,1) - comCell(t-1,1))**2 + (comCell(t,2) - comCell(t-1,2))**2 )
+    do t = 1+dt, tf, dt
+        distance = distance + dsqrt( (comCell(t,1) - comCell(t-dt,1))**2 + (comCell(t,2) - comCell(t-dt,2))**2 )
     enddo
-    CI = (comCell(tf,1) - comCell(1,1)) / displacement
-    CR = displacement / distance
+
+    if ( distance > 1E-10 ) then
+        CR = displacement / distance
+    else
+        CR = 0.0_b8
+    end if
+
+    if ( displacement > 1E-10 ) then
+        CI = (comCell(tf,1) - comCell(1,1)) / displacement
+    else
+        CI = 0.0_b8
+    end if
 end subroutine getChemotaxMetric
 
 
@@ -98,6 +108,7 @@ subroutine getCellSpeed( tf, dt, comCell, vCell, iv)
         vCell(i) = d / real(dt)
     enddo
     iv = i
+    ! write(*,*) t, tf, iv, vCell(iv), vCell(iv-1), vCell(iv+1)
 end subroutine getCellSpeed
 
 
