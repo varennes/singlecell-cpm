@@ -24,6 +24,10 @@ integer, allocatable :: rCell(:,:), rTmp(:,:), fill(:,:)
 
 character(len=1024) :: filename
 
+real(b8) :: cpuT0, cpuT1
+
+call cpu_time(cpuT0)
+
 allocate( localSignal( 4*int(aCell/pxReal**2)) )
 allocate( rCell( 4*int(aCell/pxReal**2), 2) )
 allocate(  rTmp( 4*int(aCell/pxReal**2), 2) )
@@ -46,10 +50,11 @@ do run = 1, runTotal
         write(*,*)
     end if
 
-    ! cell initialization time: cell shape and size relaxes before start of chemotaxis simulation
+    ! initialize polarization and COM values
     plrVec = 0.0_b8
     comOld = 0.0_b8
     comNew = 0.0_b8
+    ! initialize cell; cell shape relaxes
     do i = 1, 10
         ! update elemMax
         do k = 1, 2
@@ -70,11 +75,14 @@ do run = 1, runTotal
         ! call getVectorUpdate( plrVec, rCell, pxCell, comNew, deltaCOM, globalSignal, localSignal)
         comOld = comNew
     enddo
+    plrVec = 0.0_b8
 
+    ! get initial cell COM
     call getCOM( rCell, comCell(1,:))
 
+    ! ! output initial cell information
     ! call wrtCell( rCell, pxCell, 1)
-    call wrtCOM( comCell(1,:), 1, run)
+    ! call wrtCOM( comCell(1,:), 1, run)
     ! call wrtPlrVec( plrVec, 1, run)
 
     do tMC = 2, tMCmax
@@ -92,29 +100,31 @@ do run = 1, runTotal
         enddo
         elemMax = (rSim(1,2) - rSim(1,1) + 1) * (rSim(2,2) - rSim(2,1) + 1)
 
+        ! elementary time-step loop
         do telem = 1, elemMax
             call pickLatticePair( rSim, a, b, rCell, pxCell, elemMax)
             if ( a(3) == b(3) ) then
                 cycle
             end if
             call getVectorStep( a, b, rCell, pxCell, pCell, plrVec)
-        enddo ! end of elementary time-step loop
+        enddo
 
-        if ( mod(tMC,11) == 0 ) then
-            ! call wrtCell( rCell, pxCell, tMC)
-            call wrtCOM( comCell(tMC,:), tMC, run)
-            ! call wrtPlrVec( plrVec, tMC, run)
-        end if
+        ! ! output cell information
+        ! if ( mod(tMC, 10) == 0 ) then
+        !     call wrtCell( rCell, pxCell, tMC)
+        !     call wrtCOM( comCell(tMC,:), tMC, run)
+        !     call wrtPlrVec( plrVec, tMC, run)
+        ! end if
 
     enddo ! end of Monte Carlo time-step loop
 
-    dt = 3
+    dt = 10
     call getCellSpeed( tMC-1, dt, comCell, vCell, iv)
-    call getChemotaxMetric( tMC-1, comCell, CI, CR)
+    call getChemotaxMetric( tMC-1, dt, comCell, CI, CR)
 
-    ! call wrtDisplacement( comCell(tMC-1,:), comCell(1,:), tMC-1, run)
     call wrtChemotaxMetric( CI, CR, run)
     call wrtMeanSpeed( vCell, run, iv)
+    ! call wrtDisplacement( comCell(tMC-1,:), comCell(1,:), tMC-1, run)
     ! call wrtInstSpeed( vCell, dt, run, iv)
 
     write(*,"(A14)", advance="no") 'complete run #'
@@ -122,7 +132,11 @@ do run = 1, runTotal
 
 enddo
 
+call cpu_time(cpuT1)
+
 write(*,*) '  SIMULATION COMPLETE'
+write(*,*) ''
+write(*,*) '  run time (min) =', ( cpuT1 - cpuT0) / 60.0_b8
 
 close(12)
 close(13)
@@ -132,9 +146,6 @@ close(16)
 close(21)
 close(22)
 
-! deallocate( localSignal )
-! deallocate( rCell )
-! deallocate( rTmp  )
 
 end program
 
