@@ -12,7 +12,7 @@ subroutine initSystem( rCell, rSim, elemMax, pxCell, pCell)
     integer  :: i, j, k, lCell, lx, ly
 
     ! calculate cell length in terms of simulation lattices
-    lCell = int(dsqrt(aCell/pxReal**2))
+    lCell = int(dsqrt(aCell/pxLength**2))
     if ( lCell == 0 ) then
         lCell = 1
     end if
@@ -55,7 +55,7 @@ subroutine getCOM( rCell, com)
         x = x + real(rCell(i,1))
         y = y + real(rCell(i,2))
         i = i + 1
-        if ( i > 4*int(aCell/pxReal**2) ) then
+        if ( i > 4*int(aCell/pxLength**2) ) then
             exit
         end if
     enddo
@@ -65,13 +65,15 @@ subroutine getCOM( rCell, com)
 end subroutine getCOM
 
 
-subroutine getChemotaxMetric( tf, dt, comCell, CI, CR)
+subroutine getChemotaxMetric( tf, comCell, CI, CR)
     implicit none
-    integer,  intent(in)  :: tf, dt
+    integer,  intent(in)  :: tf
     real(b8), intent(in)  :: comCell(:,:)
     real(b8), intent(out) :: CI, CR
     real(b8) :: displacement, distance, r
-    integer  :: t
+    integer  :: t, dt
+
+    dt = timeSample
 
     displacement = dsqrt( (comCell(tf,1) - comCell(1,1))**2 + (comCell(tf,2) - comCell(1,2))**2 )
     distance = 0.0_b8
@@ -94,14 +96,16 @@ subroutine getChemotaxMetric( tf, dt, comCell, CI, CR)
 end subroutine getChemotaxMetric
 
 
-subroutine getCellSpeed( tf, dt, comCell, vCell, iv)
+subroutine getCellSpeed( tf, comCell, vCell, iv)
     implicit none
-    integer,  intent(in)  :: tf, dt
+    integer,  intent(in)  :: tf
     integer,  intent(out) :: iv
     real(b8), intent(in)  :: comCell(:,:)
     real(b8), intent(out) :: vCell(:)
     real(b8) :: d
-    integer  :: i, t
+    integer  :: i, t, dt
+
+    dt = timeSample
 
     vCell = 0.0_b8
     i = 0

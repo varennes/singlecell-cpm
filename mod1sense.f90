@@ -8,7 +8,7 @@ contains
 real(b8) function cLin( x)
     implicit none
     real(b8), intent(in) :: x
-    cLin = c0 + (g * x / pxReal)
+    cLin = c0 + (g * x / pxLength)
 end function cLin
 
 
@@ -23,7 +23,7 @@ subroutine getSignal( rCell, pxCell, globalSignal, localSignal)
     integer   :: i
 
     latticeHeight = 0.10_b8 ! set cell height in units of microns
-    latticeVolume = latticeHeight * pxReal**2
+    latticeVolume = latticeHeight * pxLength**2
     conversion = 0.6022_b8 ! convert nanoMolars (nM) to per cubic micron (micron^-3)
 
     localSignal(:) = 0.0_b8

@@ -36,9 +36,9 @@ real(b8) function getEnergy( rCell, pxCell, pCell)
     ! get cell perimeter for contact energy and perimeter energy
     call perimCheck( rCell, pxCell, perim)
     contact   = alpha  * real(perim)
-    perimCost = lPerim * ( real(perim)  - (pCell/pxReal))**2
+    perimCost = lPerim * ( real(perim)  - (pCell/pxLength))**2
     ! energy contribution due to area
-    areaCost  = lArea  * ( real(pxCell) - (aCell/pxReal**2))**2
+    areaCost  = lArea  * ( real(pxCell) - (aCell/pxLength**2))**2
 
     getEnergy = contact + areaCost + perimCost
 
@@ -119,7 +119,7 @@ subroutine getVectorStep( a, b, rCell, pxCell, pCell ,plrVec)
     integer,  intent(inout) :: rCell(:,:), pxCell
     real(b8), intent(in)    :: plrVec(2)
     real(b8), intent(inout) :: pCell
-    integer  :: fill( 4*int(aCell/pxReal**2), 2), rTmp( 4*int(aCell/pxReal**2), 2)
+    integer  :: fill( 4*int(aCell/pxLength**2), 2), rTmp( 4*int(aCell/pxLength**2), 2)
     integer  :: nFill, pxTmp
     real(b8) :: prob, r, ui, uf, w
     real(b8) :: dxTmp, comNew(2), comOld(2), vec(2)
@@ -130,8 +130,9 @@ subroutine getVectorStep( a, b, rCell, pxCell, pCell ,plrVec)
     if ( a(3) == 1 ) then
         ! cell is adding a pixel
         pxTmp = pxCell + 1
-        if ( pxTmp > 4*int(aCell/pxReal**2) ) then
+        if ( pxTmp > 4*int(aCell/pxLength**2) ) then
             ! cell is adding more pixels than allocated
+            write(*,*) 'ERROR: not enough pixels allocated'
             prob = 0.0_b8
         else
             rTmp(pxTmp,1:2) = b(1:2)
@@ -179,69 +180,13 @@ subroutine getVectorStep( a, b, rCell, pxCell, pCell ,plrVec)
 end subroutine getVectorStep
 
 
-! subroutine of all the steps neccasary for one elementary time-step
-subroutine getElemStep( a, b, rCell, pxCell, pCell, globalSignal, localSignal)
-    implicit none
-    integer, intent(in)     :: a(4), b(4)
-    integer, intent(inout)  :: rCell(:,:), pxCell
-    real(b8), intent(inout) :: globalSignal, localSignal(:), pCell
-    integer  :: fill( 4*int(aCell/pxReal**2), 2), rTmp( 4*int(aCell/pxReal**2), 2)
-    integer  :: nFill, pxTmp
-    real(b8) :: prob, r, ui, uf, w
-
-    call getSignal( rCell, pxCell, globalSignal, localSignal)
-
-    fill = 0
-    rTmp = 0
-    rTmp = rCell
-    if ( a(3) == 1 ) then
-        ! cell is adding a pixel
-        pxTmp = pxCell + 1
-        rTmp(pxTmp,1:2) = b(1:2)
-
-        w = getWork( globalSignal, localSignal(a(4)), a(3))
-        ! w = getWorkAdpt1( globalSignal, localSignal(a(4)), a(3))
-
-        ui   = getEnergy( rCell, pxCell, pCell)
-        uf   = getEnergy( rTmp,  pxTmp,  pCell)
-        prob = getProb( uf, ui, w)
-    else
-        ! cell is removing a pixel
-        pxTmp = pxCell - 1
-        call delpxCell( rTmp, pxTmp+1, b(1:2))
-        ! check if cell pixels are simply connected
-        call floodFill( rTmp(1,1:2), fill, rTmp(:,:))
-        call occupyCount( nFill, fill )
-        if ( nFill /= pxTmp .OR. pxTmp == 0 ) then
-            ! cell is not simply connected
-            ! write(*,*) 'nF=', nFill, 'pxTmp=', pxTmp
-            prob = 0.0_b8
-        else
-            w = getWork( globalSignal, localSignal(b(4)), a(3))
-            ! w = getWorkAdpt1( globalSignal, localSignal(b(4)), a(3))
-
-            ui   = getEnergy( rCell, pxCell, pCell)
-            uf   = getEnergy( rTmp,  pxTmp,  pCell)
-            prob = getProb( uf, ui, w)
-        end if
-    end if
-    ! write(*,*) ' prob, w = ', prob, w
-    call random_number(r)
-    if ( r < prob ) then
-         rCell =  rTmp
-        pxCell = pxTmp
-        ! write(*,*) '  success: a, b', a, b
-    end if
-end subroutine getElemStep
-
-
 ! subroutine of all the steps neccasary for one elementary initialization time-step
 subroutine getItlStep( a, b, rCell, pxCell, pCell)
     implicit none
     real(b8), intent(in)    :: pCell
     integer,  intent(in)    :: a(4), b(4)
     integer,  intent(inout) :: rCell(:,:), pxCell
-    integer  :: fill( 4*int(aCell/pxReal**2), 2), rTmp( 4*int(aCell/pxReal**2), 2)
+    integer  :: fill(4*int(aCell/pxLength**2),2), rTmp(4*int(aCell/pxLength**2),2)
     integer  :: nFill, pxTmp
     real(b8) :: prob, r, ui, uf, w
 
@@ -279,11 +224,6 @@ subroutine getItlStep( a, b, rCell, pxCell, pCell)
     if ( r < prob ) then
          rCell =  rTmp
         pxCell = pxTmp
-        ! if ( a(3) == 1 ) then
-        !     write(*,*) ' cell +1 :', b(1:2)
-        ! else
-        !     write(*,*) ' cell -1 :', b(1:2)
-        ! end if
     end if
 end subroutine getItlStep
 

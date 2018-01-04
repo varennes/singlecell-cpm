@@ -16,10 +16,11 @@ real(b8), parameter :: eVec =  1.0_b8
 real(b8), parameter :: nVec =  0.1_b8
 
 !!! SIMULATION PARAMETERS
-real(b8), parameter :: pxReal =  5.0_b8
-integer,  parameter :: lfinish =  9
-integer,  parameter :: runTotal = 20
-integer,  parameter :: tMCmax =  400
+real(b8), parameter :: pxLength = 5.0_b8
+real(b8), parameter :: pxDepth  = 0.1_b8
+integer,  parameter :: timeSample = 10
+integer,  parameter :: timeMCmax  = 360
+integer,  parameter :: runTotal = 10
 
 real(b8), parameter :: pi = 3.1415927_b8  ! pi
 
@@ -37,9 +38,10 @@ end module
 !   rVec = polarization vector decay rate in units of 1 / MonteCarlo time-step
 !   eVec = Alignment strength of the polarization vector
 !
-!   pxReal = length of one lattice site in microns
-!  lfinish = finish line in terms of cell lengths
-! runTotal = total number of runs
-!   tMCmax = max number of MC time-steps
+!   pxLength = length of one lattice site in microns
+!   pxDepth  =  depth of one lattice site in microns
+! timeSample = number of time-steps between sampling events
+! timeMCmax  = max number of MC time-steps
+!   runTotal = total number of runs
 !
 !!! PARAMETER DESCRIPTIONS !!!

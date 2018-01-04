@@ -13,9 +13,9 @@ integer :: i, iv, j, k, n, nFill
 integer :: run, dt, tMC, telem, elemMax
 
 real(b8) :: prob, r, w, ui, uf
-real(b8) :: CI, CR, vCell(tMCmax)
+real(b8) :: CI, CR, vCell(timeMCmax)
 real(b8) :: pCell, plrVec(2), globalSignal
-real(b8) :: comCell(tMCmax,2), deltaCOM(2), comOld(2), comNew(2)
+real(b8) :: comCell(timeMCmax,2), deltaCOM(2), comOld(2), comNew(2)
 real(b8), allocatable :: localSignal(:)
 
 integer :: a(4), b(4), rSim(2,2)
@@ -28,10 +28,10 @@ real(b8) :: cpuT0, cpuT1
 
 call cpu_time(cpuT0)
 
-allocate( localSignal( 4*int(aCell/pxReal**2)) )
-allocate( rCell( 4*int(aCell/pxReal**2), 2) )
-allocate(  rTmp( 4*int(aCell/pxReal**2), 2) )
-allocate(  fill( 4*int(aCell/pxReal**2), 2) )
+allocate( localSignal( 4*int(aCell/pxLength**2)) )
+allocate( rCell( 4*int(aCell/pxLength**2), 2) )
+allocate(  rTmp( 4*int(aCell/pxLength**2), 2) )
+allocate(  fill( 4*int(aCell/pxLength**2), 2) )
 
 call init_random_seed()
 
@@ -45,8 +45,8 @@ do run = 1, runTotal
         write(*,*) ' rSim(2) = ', rSim(2,:)
         write(*,*) ' cell x:', rCell(1,1), rCell(pxCell,1)
         write(*,*) ' cell y:', rCell(1,2), rCell(pxCell,2)
-        write(*,*) ' pxCell:   ',   pxCell, '| elemMax =', elemMax
-        write(*,*) ' runTotal =', runTotal, '| tMCmax =', tMCmax
+        write(*,*) ' pxCell:   ',   pxCell, '| elemMax   =', elemMax
+        write(*,*) ' runTotal =', runTotal, '| timeMCmax =', timeMCmax
         write(*,*)
     end if
 
@@ -85,7 +85,7 @@ do run = 1, runTotal
     ! call wrtCOM( comCell(1,:), 1, run)
     ! call wrtPlrVec( plrVec, 1, run)
 
-    do tMC = 2, tMCmax
+    do tMC = 2, timeMCmax
         ! update location of COM and change in COM
         call getCOM( rCell, comCell(tMC,:))
         deltaCOM = comCell(tMC,:) - comCell(tMC-1,:)
@@ -118,14 +118,13 @@ do run = 1, runTotal
 
     enddo ! end of Monte Carlo time-step loop
 
-    dt = 10
-    call getCellSpeed( tMC-1, dt, comCell, vCell, iv)
-    call getChemotaxMetric( tMC-1, dt, comCell, CI, CR)
+    call getCellSpeed( tMC-1, comCell, vCell, iv)
+    call getChemotaxMetric( tMC-1, comCell, CI, CR)
 
     call wrtChemotaxMetric( CI, CR, run)
     call wrtMeanSpeed( vCell, run, iv)
     ! call wrtDisplacement( comCell(tMC-1,:), comCell(1,:), tMC-1, run)
-    ! call wrtInstSpeed( vCell, dt, run, iv)
+    ! call wrtInstSpeed( vCell, run, iv)
 
     write(*,"(A14)", advance="no") 'complete run #'
     write(*,"(I5)") run

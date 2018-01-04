@@ -73,23 +73,23 @@ subroutine wrtChemotaxMetric( CI, CR, run)
 end subroutine wrtChemotaxMetric
 
 
-subroutine wrtInstSpeed( vCell, dt, run, iv)
+subroutine wrtInstSpeed( vCell, run, iv)
     implicit none
     real(b8), intent(in) :: vCell(:)
-    integer,  intent(in) :: dt, run, iv
+    integer,  intent(in) :: run, iv
     integer :: i, t
     character(len=1024) :: filename
 
     write (filename,"(A10)") 'v_inst.dat'
     open( 14, file=filename)
 
-    t = 1 + dt
+    t = 1 + timeSample
     do i = 1, iv
         write(14,"(E16.8)", advance="no") vCell(i)
         write(14,"(I7)", advance="no") t
         write(14,"(I7)", advance="no") run
         write(14,*) ''
-        t = t + dt
+        t = t + timeSample
     enddo
 end subroutine wrtInstSpeed
 

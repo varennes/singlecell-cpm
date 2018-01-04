@@ -9,12 +9,13 @@ import os
 def replaceParam( param, newValue):
     paramList = [
     "alpha", "lArea", "lPerim",
-    "c0", "g",
     "rVec", "eVec", "nVec",
-    "aCell", "pxReal",
-    "lfinish", "runTotal", "tMCmax"
+    "aCell", "pxLength", "pxDepth",
+    "c0", "g",
+    "timeSample",
+    "runTotal"
     ]
-    if paramList.index(param) > 9:
+    if paramList.index(param) > 10:
         sOld = "integer,  parameter :: " + param
         sNew = sOld
         sNew += " =  " + str(int(newValue)) + "\n"
@@ -46,32 +47,37 @@ def compile():
 '''
 List of parameters that can be changed:
 
-"alpha", "lArea", "lPerim"
-"c0", "g"
-"rVec", "eVec", "nVec",
-"aCell", "pxReal"
-"lfinish", "runTotal", "tMCmax"
+alpha, lArea, lPerim,
+rVec, eVec, nVec,
+aCell, pxLength, pxDepth,
+c0, g,
+timeSample,
+runTotal
 '''
 
 if __name__ == '__main__':
     # all possible parameters and their default values
     paramList = [
     "alpha", "lArea", "lPerim",
-    "c0", "g",
     "rVec", "eVec", "nVec",
-    "aCell", "pxReal",
-    "lfinish", "runTotal", "tMCmax"
+    "aCell", "pxLength", "pxDepth",
+    "c0", "g",
+    "timeSample",
+    "runTotal"
     ]
     paramDefault = [
-    0.8, 0.5, 0.01,
-    0.0, 0.5,
-    0.5, 0.01, 0.01,
-    400, 2.0,
-    9, 1, 100
+    3.0, 0.5, 0.05,
+    0.5, 0.01, 1.0,
+    400.0, 2.0, 0.1,
+    2.5, 0.005,
+    2.0,
+    100,
+    1
     ]
+
     # iterate over psList of parameters with values contained in pvList
     # psList = ["tMCmax"]
-    psList = ["pxReal"]
+    psList = ["pxLength"]
     pvList = [ [ 4.0, 3.0]]
     # psList = [ "rVec", "eVec"]
     # pvList = [ [0.5, 0.1, 0.05, 0.01], [0.0, 0.01, 0.1]]
@@ -80,6 +86,10 @@ if __name__ == '__main__':
     for param in paramList:
         i = paramList.index(param)
         replaceParam( param, paramDefault[i])
+
+    # set "tMCmax" to be 36*timeSample
+    i = paramList.index('timeSample')
+    replaceParam( 'tMCmax', 36*paramDefault[i])
 
     # check if directory for output data exists
     data_dir_location = 'data/test'
