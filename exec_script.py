@@ -13,7 +13,8 @@ def replaceParam( param, newValue):
     "aCell", "pxLength", "pxDepth",
     "c0", "g",
     "timeSample",
-    "runTotal"
+    "runTotal",
+    "timeMCmax"
     ]
     if paramList.index(param) > 10:
         sOld = "integer,  parameter :: " + param
@@ -71,12 +72,10 @@ if __name__ == '__main__':
     400.0, 2.0, 0.1,
     2.5, 0.005,
     2.0,
-    100,
-    1
+    100
     ]
 
     # iterate over psList of parameters with values contained in pvList
-    # psList = ["tMCmax"]
     psList = ["pxLength"]
     pvList = [ [ 4.0, 3.0]]
     # psList = [ "rVec", "eVec"]
@@ -87,9 +86,9 @@ if __name__ == '__main__':
         i = paramList.index(param)
         replaceParam( param, paramDefault[i])
 
-    # set "tMCmax" to be 36*timeSample
+    # set "timeMCmax" to be 36*timeSample
     i = paramList.index('timeSample')
-    replaceParam( 'tMCmax', 36*paramDefault[i])
+    replaceParam( 'timeMCmax', 36*paramDefault[i])
 
     # check if directory for output data exists
     data_dir_location = 'data/test'
